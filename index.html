@@ -755,11 +755,13 @@ function side(sign){
   const EPW=2.0,EPY=12.03,EPH=4.35,EPL=6.0; // solid block, 3 mm deep inward (wider than the temple, as in the close-up); outer faces flush // outer end of the front plate: 9.85-14.2 mm
   // corner: the strip turns through a 45° chamfered face (close-up photo), so front plate, chamfer and side read as one bent piece
   // one solid block seen from above: front flush with the front plate, outer front corner cut at 45° (the chamfered face in the close-up)
-  const CH=1.1,FZ=-.15;
-  { const sh=new THREE.Shape([V(-EPW,EPL),V(0,EPL),V(0,-FZ+CH),V(-CH,-FZ),V(-EPW,-FZ)]); // (x, -z)
-    let bg=new THREE.ExtrudeGeometry(sh,{depth:EPH-.3,bevelEnabled:true,bevelThickness:.15,bevelSize:.15,bevelSegments:2});
-    bg.rotateX(-Math.PI/2);bg.translate(0,EPY-EPH/2+.15,0);bg=smooth(bg);mk(bg,'metal','end',hg);
-    const cf=mk(linUV(new THREE.PlaneGeometry(CH*Math.SQRT2-.2,EPH-.4),[1/4,0,.195,.5]),'ep','end',hg);cf.position.set(-CH/2+.07,EPY,-FZ-CH/2+.07);cf.rotation.y=Math.PI/4; }
+  const CH=1.7,FZ=-.15;
+  { // outer front corner swept round on a radius, so the front plate flows into the side piece (top view)
+    const R=1.7,pts=[V(-EPW,EPL),V(0,EPL),V(0,-FZ+R)];
+    for(let i=1;i<12;i++){const t=Math.PI/2*i/12;pts.push(V(-R+R*Math.cos(t),-FZ+R-R*Math.sin(t)))}
+    pts.push(V(-R,-FZ),V(-EPW,-FZ));
+    let bg=new THREE.ExtrudeGeometry(new THREE.Shape(pts),{depth:EPH-.3,bevelEnabled:true,bevelThickness:.15,bevelSize:.15,bevelSegments:2,curveSegments:12});
+    bg.rotateX(-Math.PI/2);bg.translate(0,EPY-EPH/2+.15,0);bg=smooth(bg);mk(bg,'metal','end',hg); }
   // beaded panel on the front 3.7 mm of the outer side face, plain brushed behind it (side photograph)
   const sfx=mk(linUV(new THREE.PlaneGeometry(3.3,EPH-.3),[1/4,0,.195,.5]),'ep','end',hg);sfx.position.set(.09,EPY,-CH-1.75);sfx.rotation.y=Math.PI/2;
   // hinge screw seen from below at the joint
@@ -777,19 +779,19 @@ function side(sign){
   // nose pad assembly retraced from the close-ups: a flat pad arm welded down the back of the rim beside the bridge foot,
   // a pad box with a small screw at the top, a clamp tip with a screw at the bottom, and the teardrop pad hung from the box
   const RB=-2.25; // back face of the rim (local z)
-  const bar=mk(new RoundedBoxGeometry(.9,10.4,.6,2,.2),'metal','brow',g);bar.position.set(11.35,-.9,RB-.3);bar.rotation.z=.05;
-  const pbox=mk(new RoundedBoxGeometry(1.6,1.7,1.5,2,.3),'metal','brow',g);pbox.position.set(11.0,3.3,RB-1.15);
-  const scr1=mk(new THREE.SphereGeometry(.38,16,8,0,Math.PI*2,0,Math.PI/2),'metal','brow',g);scr1.position.set(11.0,4.15,RB-1.15);scr1.scale.y=.45;
-  const tip=mk(new RoundedBoxGeometry(1.2,1.6,1.1,2,.25),'metal','brow',g);tip.position.set(11.55,-6.6,RB-.75);
-  const scr2=mk(new THREE.CylinderGeometry(.45,.45,.25,16),'dark','brow',g);scr2.position.set(11.55,-6.6,RB-1.37);scr2.rotation.x=Math.PI/2;
-  for(const r of [0,Math.PI/2]){const sl=mk(new THREE.BoxGeometry(.6,.1,.08),'metal','brow',g);sl.position.set(11.55,-6.6,RB-1.52);sl.rotation.z=r}
-  // stem from the pad box down to the pad's back
-  const pad=mk(padG,'brushed','brow',g);pad.position.set(10.0,-.4,RB-2.5);pad.rotation.y=.93;
-  { // stem from the pad box to a cup on the back of the pad, near its top
-    const A=new THREE.Vector3(11.0,3.0,RB-1.4),Bp=new THREE.Vector3(10.0+.8*.45,2.0,RB-2.5+.6*.45),d=Bp.clone().sub(A);
-    const st=mk(new THREE.CylinderGeometry(.3,.3,d.length(),10),'metal','brow',g);st.position.copy(A).addScaledVector(d,.5);
-    st.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());
-    const cup=mk(new THREE.CylinderGeometry(.75,.75,.4,16),'metal','brow',g);cup.position.copy(Bp);cup.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(.8,0,.6))}
+  // pad arm: a flat strip welded to the back of the eyewire, following its curve down the nasal side
+  const armPts=ring(EN_IN,.25).filter(p=>p.x<C.x&&p.y<3.6&&p.y>-7.2).sort((a,b)=>b.y-a.y).map(p=>new THREE.Vector3(p.x,p.y,RB-.35));
+  const armC=new THREE.CatmullRomCurve3(armPts);
+  { const tg2=new THREE.TubeGeometry(armC,40,.42,8);const q=tg2.attributes.position; // flatten the tube into a strip (thin along z)
+    for(let i=0;i<q.count;i++)q.setZ(i,RB-.35+(q.getZ(i)-(RB-.35))*.55);q.needsUpdate=true;tg2.computeVertexNormals();mk(tg2,'metal','brow',g); }
+  // from the third angle: small eye at the top of the arm, the pad box mid-way with its screw beside it, the pad held close to the box
+  const top=armC.getPoint(0),mid=armC.getPoint(.45);
+  const eye=mk(new THREE.TorusGeometry(.55,.18,8,20),'metal','brow',g);eye.position.set(top.x-.1,top.y+.3,RB-.6);eye.rotation.y=Math.PI/2;
+  const pbox=mk(new RoundedBoxGeometry(1.3,2.6,1.6,2,.25),'metal','brow',g);pbox.position.set(mid.x-.25,mid.y,RB-1.2);
+  const scr2=mk(new THREE.CylinderGeometry(.5,.5,.3,16),'dark','brow',g);scr2.position.set(mid.x+.45,mid.y-1.6,RB-1.0);scr2.rotation.z=Math.PI/2;
+  for(const r of [0,Math.PI/2]){const sl=mk(new THREE.BoxGeometry(.08,.7,.1),'metal','brow',g);sl.position.set(mid.x+.62,mid.y-1.6,RB-1.0);sl.rotation.x=r}
+  const pad=mk(padG,'brushed','brow',g);pad.position.set(mid.x-1.0,mid.y+1.2,RB-2.5);pad.rotation.y=.93;
+  { const st=mk(new THREE.CylinderGeometry(.35,.35,1.3,10),'metal','brow',g);st.position.set(mid.x-.6,mid.y,RB-2.0);st.rotation.x=Math.PI/2; }
 }
 side(1);side(-1);
 
