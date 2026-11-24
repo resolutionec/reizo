@@ -851,7 +851,7 @@ function setMode(m){
 }
 hit.addEventListener('wheel',e=>{ // on the home hero, let the page scroll once the zoom limit is reached
   if(mode!=='home')return;const d=camera.position.distanceTo(controls.target);
-  if((e.deltaY<0&&d<=controls.minDistance+.5)||(e.deltaY>0&&d>=controls.maxDistance-.5))e.stopImmediatePropagation();
+  if(e.deltaY<0&&d<=controls.minDistance+.5)e.stopImmediatePropagation(); /* zooming out at the limit stays on the model: the page never scrolls down from the hero */
 },{capture:true});
 controls.addEventListener('start',()=>{controls.autoRotate=false;camGoal=null;clearTimeout(resumeT)});
 controls.addEventListener('end',()=>{clearTimeout(resumeT);resumeT=setTimeout(()=>{if(!window.PV?.locked)controls.autoRotate=!reduce},2600)});
