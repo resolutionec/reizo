@@ -17,7 +17,7 @@ const BAND=canvasTex(256,128,(g,w,h)=>{g.fillStyle='#e9e9e9';g.fillRect(0,0,w,h)
   for(const x of [20,236]){g.beginPath();g.arc(x,cy,7,0,7);g.fill()}});
 // end-piece face: brushed, with a beaded row along the top and bottom edges (one 4 mm tile)
 const EPT=canvasTex(256,256,(g,w,h)=>{g.fillStyle='#dcdcdc';g.fillRect(0,0,w,h);
-  for(let i=0;i<220;i++){g.strokeStyle=`rgba(${rnd()<.5?40:255},${rnd()<.5?40:255},${rnd()<.5?40:255},${.05+rnd()*.08})`;g.lineWidth=1+rnd()*1.5;const y=rnd()*h;g.beginPath();g.moveTo(0,y);g.lineTo(w,y+rnd()*2-1);g.stroke()}
+  for(let i=0;i<220;i++){{const c=rnd()<.5?40:255;g.strokeStyle=`rgba(${c},${c},${c},${.05+rnd()*.08})`};g.lineWidth=1+rnd()*1.5;const y=rnd()*h;g.beginPath();g.moveTo(0,y);g.lineTo(w,y+rnd()*2-1);g.stroke()}
   for(const y of [34,222]){g.fillStyle='#6a6a6a';g.fillRect(0,y-16,w,32);g.fillStyle='#f2f2f2';for(let x=8;x<w;x+=16){g.beginPath();g.arc(x,y,6,0,7);g.fill()}}});
 // coloured temple: soft tonal patches and a fine diagonal grain
 const CAMO=canvasTex(512,512,(g,w,h)=>{g.fillStyle='#d8d8d8';g.fillRect(0,0,w,h);
@@ -40,7 +40,7 @@ for(const [k,w] of Object.entries(WAYS)){
   M.metal[k]=new THREE.MeshStandardMaterial({color:w.metal,metalness:1,roughness:w.rough*.7,envMapIntensity:1.8,...PO(-1)});
   M.brushed[k]=new THREE.MeshStandardMaterial({color:w.metal,metalness:1,roughness:w.rough+.12,envMapIntensity:1.6,...PO(-1)});
   M.enamel[k]=new THREE.MeshPhysicalMaterial({color:w.enamel,metalness:.15,roughness:.22,clearcoat:.8,clearcoatRoughness:.1,envMapIntensity:1.2,...PO(-2)});
-  M.camo[k]=new THREE.MeshPhysicalMaterial({color:w.enamel,map:CAMO.map,bumpMap:CAMO.bump,bumpScale:.4,metalness:.35,roughness:.38,clearcoat:.5,envMapIntensity:1.3});
+  M.camo[k]=new THREE.MeshPhysicalMaterial({color:w.enamel,map:CAMO.map,bumpMap:CAMO.bump,bumpScale:.4,metalness:.35,roughness:.38,clearcoat:.5,envMapIntensity:1.3,...PO(-2)});
   M.band[k]=new THREE.MeshStandardMaterial({color:w.metal,map:BAND.map,bumpMap:BAND.bump,bumpScale:.8,metalness:.85,roughness:w.rough,envMapIntensity:1.8,...PO(-2)});
   M.ep[k]=new THREE.MeshStandardMaterial({color:w.metal,map:EPT.map,bumpMap:EPT.bump,bumpScale:.6,metalness:.85,roughness:w.rough*.9,envMapIntensity:1.8,...PO(-2)});
   M.br[k]=new THREE.MeshStandardMaterial({color:w.metal,map:brMap,bumpMap:brBump,bumpScale:1,metalness:.8,roughness:w.rough,envMapIntensity:1.8,...PO(-2)});
@@ -89,60 +89,54 @@ let rimG=ext(annulus(ring(WIRE,-.25),ring(LENS,.25)),2.6,.25,3);rimG.translate(0
 let enG=ext(annulus(ring(EN_OUT,-.12),ring(EN_IN,.12)),.3,.12,3);enG.translate(0,0,1.0);enG=smooth(enG);
 const bandG=ribbon(ring(WIRE,.09),-1.9,.7,4);
 
-// temple centre line (side profile, mm): straight run sloping 4.4° down, a bend over the ear, then the drop to the tip
-const TL=145,TS=104,TR=8,TB=.62,tailA=-.08-TB; // lengths, bend radius, bend angle
-function cl(t){ // point + unit tangent at arc length t
-  const a0=-.077;
-  if(t<=TS)return {p:V(t*Math.cos(a0),t*Math.sin(a0)),d:V(Math.cos(a0),Math.sin(a0))};
-  const pS=V(TS*Math.cos(a0),TS*Math.sin(a0)),bl=TR*TB;
-  if(t<=TS+bl){const a=a0-(t-TS)/TR,cx=pS.x+TR*Math.sin(a0),cy=pS.y-TR*Math.cos(a0);return {p:V(cx-TR*Math.sin(a),cy+TR*Math.cos(a)),d:V(Math.cos(a),Math.sin(a))}}
-  const e=cl(TS+bl),a=a0-TB;return {p:V(e.p.x+(t-TS-bl)*Math.cos(a),e.p.y+(t-TS-bl)*Math.sin(a)),d:V(Math.cos(a),Math.sin(a))};
-}
-const lerp=(a,b,f)=>a+(b-a)*Math.min(1,Math.max(0,f));
-const tw=t=>t<3?3.9:t<74?lerp(3.9,3.0,(t-3)/71):t<104?lerp(3.0,2.5,(t-74)/30):t<TL-34?2.5:lerp(2.5,6.6,Math.sin(Math.PI/2*Math.min(1,(t-(TL-34))/28))); // height
-const off=(t,h)=>{const {p,d}=cl(t);return V(p.x-d.y*h,p.y+d.x*h)};
-function tempPts(t0,t1,cap,hw=t=>tw(t)/2,st=1){const L=[],R=[];for(let t=t0;t<=t1+1e-6;t+=st){L.push(off(t,hw(t)));R.push(off(t,-hw(t)))}
-  const pts=[...L];if(cap){const {p,d}=cl(t1),r=hw(t1),a0=Math.atan2(d.x,-d.y);for(let i=1;i<16;i++){const a=a0-Math.PI*i/16;pts.push(V(p.x+r*Math.cos(a),p.y+r*Math.sin(a)))}}
-  pts.push(...R.reverse());return pts}
-const tempShape=(t0,t1,cap)=>new THREE.Shape(tempPts(t0,t1,cap));
+// temple: outline, teardrop cutout and coloured section traced from the side photograph (u = mm back from the hinge, v = mm up)
 const TT=1.1; // temple thickness
-const tFront=smooth(ext(tempShape(0,74,false),TT,.18,3));
-const rearP=tempPts(74,TL-3.2,true),rearS=new THREE.Shape(rearP);
-{const t0=TL-27,hp=tempPts(t0,TL-3.2,true,t=>Math.max(.05,tw(t)/2-1.05)*Math.min(1,(t-t0)/9+.05),.5);
- if(THREE.ShapeUtils.isClockWise(hp)===THREE.ShapeUtils.isClockWise(rearP))hp.reverse();rearS.holes.push(new THREE.Path(hp))}
-const tRear=smooth(ext(rearS,TT,.18,3));
-// ornaments: flame inlay by the hinge, diamond plate with two engraved dots where the colour ends
-const flame=new THREE.Shape([[2.5,1.25],[5.5,1.2],[8.5,.75],[12.5,0],[8.5,-.75],[5.5,-1.2],[2.5,-1.25]].map(([u,v])=>off(u,v)));
-const diamond=new THREE.Shape([[-6.2,0],[-3,1.05],[-1.6,2.35],[0,1.6],[1.6,2.35],[3,1.05],[6.2,0],[3,-1.05],[1.6,-2.35],[0,-1.6],[-1.6,-2.35],[-3,-1.05]].map(([u,v])=>off(74+u,v)));
+const sh2=(a)=>a.map(([x,y])=>V(x,y));
+function shapeWithHole(o,h){const s=new THREE.Shape(o);if(h){h=h.slice();if(THREE.ShapeUtils.isClockWise(h)===THREE.ShapeUtils.isClockWise(o))h.reverse();s.holes.push(new THREE.Path(h))}return s}
+const tBase=smooth(ext(shapeWithHole(sh2(GEO.TEMPLE.outer),sh2(GEO.TEMPLE.hole)),TT,.15,3,8));
+const tTeal=smooth(ext(new THREE.Shape(sh2(GEO.TEMPLE.teal)),TT,.2,3,8)); // colour wraps the edges; flame and diamond stay metal
+// end-piece front plate traced from the front photograph: slanted inner end over the rim, beaded face
+const epShape=new THREE.Shape(sh2(GEO.EP));
+let epG=ext(epShape,2.6,.3,3);epG.translate(0,0,-1.0);epG=smooth(epG);
+const epFace=linUV(new THREE.ShapeGeometry(epShape,8),[1/4,0,.195,-1.859]);
+// nose pad: teardrop traced from the side photograph (narrow top, full lower half)
+function padShape(){const D=GEO.PAD,n=D.length,vs=D.map(d=>d[1]),v0=vs[0],v1=vs[n-1];
+  const fitW=(()=>{const X=D.map(([w,v])=>[1,(v-v0)/(v1-v0),((v-v0)/(v1-v0))**2,((v-v0)/(v1-v0))**3]),y=D.map(d=>d[0]);const A=[0,1,2,3].map(i=>[0,1,2,3].map(j=>X.reduce((s,r)=>s+r[i]*r[j],0))),b=[0,1,2,3].map(i=>X.reduce((s,r,k)=>s+r[i]*y[k],0));
+    for(let i=0;i<4;i++){for(let k=i+1;k<4;k++){const f=A[k][i]/A[i][i];for(let j=i;j<4;j++)A[k][j]-=f*A[i][j];b[k]-=f*b[i]}}const c=[0,0,0,0];for(let i=3;i>=0;i--){c[i]=(b[i]-[0,1,2,3].slice(i+1).reduce((s,j)=>s+A[i][j]*c[j],0))/A[i][i]}return t=>c[0]+c[1]*t+c[2]*t*t+c[3]*t**3})();
+  const P=Array.from({length:24},(_,i)=>{const t=i/23;return [fitW(t),v0+(v1-v0)*t]}),R=P.map(([w,v])=>V(w,v)),L=P.map(([w,v])=>V(-w,v)).reverse(),pts=[...R];
+  const [wb,vb]=P[P.length-1],[wt,vt]=P[0];
+  for(let i=1;i<12;i++){const a=-Math.PI*i/12;pts.push(V(wb*Math.cos(a),vb+wb*.45*Math.sin(a)))}
+  pts.push(...L);for(let i=1;i<12;i++){const a=Math.PI-Math.PI*i/12;pts.push(V(wt*Math.cos(a),vt+wt*.45*Math.sin(a)))}
+  return new THREE.Shape(pts)}
+let padG=ext(padShape(),.45,.3,3,8);padG.translate(0,0,-.22);padG=smooth(padG);
 
 function side(sign){
   const g=new THREE.Group();g.scale.x=sign;g.rotation.y=sign*WRAP;frame.add(g);
   mk(lensG,'lens','lens',g).renderOrder=3;
   mk(rimG,'metal','lens',g);mk(enG,'enamel','lens',g);mk(bandG,'band','lens',g);
-  // end-piece: beaded front plate over the rim shoulder, wrapping round the corner and back to the hinge
+  // end-piece: traced plate sits in front of the enamel ring, wraps round the corner and back to the hinge
   const ep=new THREE.Group();g.add(ep);
-  const pl=mk(new RoundedBoxGeometry(11.2,4.1,2.6,3,.55),'metal','end',ep);pl.position.set(61.4,12.4,-.15);
-  const face=mk(linUV(new THREE.PlaneGeometry(10.2,3.6),[1/4,0,1/4,.5]),'ep','end',ep);face.position.set(61.4,12.4,1.24);
-  const arm=mk(new RoundedBoxGeometry(2.4,4.1,8.4,3,.55),'metal','end',ep);arm.position.set(65.8,12.4,-3.9);
-  const sfx=mk(linUV(new THREE.PlaneGeometry(8.0,3.6),[1/4,0,1/4,.5]),'ep','end',ep);sfx.position.set(67.09,12.4,-3.9);sfx.rotation.y=Math.PI/2;
-  // hinge below the end-piece: three knuckles on a pin, slotted screw on top
-  const HZ=-8.6,HX=65.2;
+  mk(epG,'metal','end',ep);
+  mk(epFace,'ep','end',ep).position.z=1.99;
+  const arm=mk(new RoundedBoxGeometry(2.4,4.1,6.0,3,.55),'metal','end',ep);arm.position.set(65.85,12.3,-1.6);
+  const sfx=mk(linUV(new THREE.PlaneGeometry(5.4,3.6),[1/4,0,1/4,.5]),'ep','end',ep);sfx.position.set(67.14,12.3,-1.6);sfx.rotation.y=Math.PI/2;
+  // hinge behind the end-piece: three knuckles on a pin, slotted screw on top
+  const HZ=-5.2,HX=65.2;
   mk(new THREE.CylinderGeometry(.42,.42,4.6,12),'dark','end',ep).position.set(HX,12.4,HZ);
   for(let i=0;i<3;i++){const k=mk(new THREE.CylinderGeometry(.95,.95,1.15,20),'metal','end',ep);k.position.set(HX,10.9+i*1.5,HZ)}
   const sh=mk(new THREE.CylinderGeometry(.95,.95,.35,20),'metal','end',ep);sh.position.set(HX,14.65,HZ);
   const sl=mk(new THREE.BoxGeometry(1.5,.12,.22),'dark','end',ep);sl.position.set(HX,14.85,HZ);sl.rotation.y=.6;
   // temple: local x runs back from the hinge, y up, z outward (thickness)
-  const tg=new THREE.Group();tg.position.set(66.9-TT-.18,12.4,HZ+.4);tg.rotation.y=Math.PI/2-WRAP;g.add(tg); // straight back, no splay
-  mk(tFront,'camo','temple',tg);mk(tRear,'brushed','temple',tg);
-  const fl=mk(ext(flame,.15,.06,2),'metal','temple',tg);fl.position.z=TT+.2+.05;
-  const dm=mk(smooth(ext(diamond,.35,.12,2)),'metal','temple',tg);dm.position.z=TT+.12;
-  for(const u of [-1.9,1.9]){const {p}=cl(74+u);const r=mk(new THREE.TorusGeometry(.55,.13,8,20),'dark','temple',tg);r.position.set(p.x,p.y,TT+.72)}
-  {const {p,d}=cl(74);const ln=mk(new THREE.BoxGeometry(.16,2.9,.12),'dark','temple',tg);ln.position.set(p.x,p.y,TT+.7);ln.rotation.z=Math.atan2(d.y,d.x)}
-  // nose pad on a pad arm from behind the bridge foot
-  const pa=new THREE.CatmullRomCurve3([[10.6,3.4,-1.6],[11.2,.4,-3.6],[10.4,-3.6,-5.6],[9.3,-6.2,-6.3]].map(a=>new THREE.Vector3(...a)));
+  const tg=new THREE.Group();tg.position.set(66.9-TT-.15,12.4,-4.9);tg.rotation.y=Math.PI/2-WRAP;g.add(tg); // straight back, no splay
+  mk(tBase,'brushed','temple',tg);mk(tTeal,'camo','temple',tg);
+  // engraving on the diamond: two rings and a dividing line
+  for(const [u,v] of [[72.1,-5.73],[69.3,-5.57]]){const r=mk(new THREE.TorusGeometry(.56,.11,8,24),'dark','temple',tg);r.position.set(u,v,TT+.17)}
+  {const ln=mk(new THREE.BoxGeometry(.14,3.6,.08),'dark','temple',tg);ln.position.set(70.7,-5.65,TT+.16);ln.rotation.z=-.077}
+  // nose pad on a pad arm from behind the bridge foot; pad faces the side of the nose
+  const pa=new THREE.CatmullRomCurve3([[10.6,3.4,-1.6],[11.7,2.0,-4.0],[11.4,-.4,-6.2],[10.5,-1.3,-6.9]].map(a=>new THREE.Vector3(...a)));
   mk(new THREE.TubeGeometry(pa,24,.36,8),'metal','brow',g);
-  const box=mk(new RoundedBoxGeometry(1.6,1.8,1.4,2,.3),'metal','brow',g);box.position.set(9.3,-6.4,-6.3);
-  const pad=mk(new THREE.SphereGeometry(1,28,18),'metal','brow',g);pad.scale.set(2.4,4.7,.6);pad.position.set(8.1,-7.2,-6.6);pad.rotation.set(.12,-1.05,.08);
+  const box=mk(new RoundedBoxGeometry(1.5,1.9,1.2,2,.3),'metal','brow',g);box.position.set(10.3,-1.3,-7.0);box.rotation.y=.93;
+  const pad=mk(padG,'brushed','brow',g);pad.position.set(9.5,0,-7.6);pad.rotation.y=.93;
 }
 side(1);side(-1);
 
