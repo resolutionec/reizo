@@ -465,8 +465,8 @@ window.PV={get cfg(){return cfg},view:'home',part:null};
 
 /* configurator */
 const cfgHTML=()=>`<div class="cfg" role="group" aria-label="Configure model M3171">${['way'].map(k=>`
-  <div class="cfg-row"><span class="cfg-k">Colour</span>
-  <div class="sw">${OPTS[k].map(([v,n,c])=>`<button class="swatch" data-k="${k}" data-v="${v}" title="${n}" aria-label="Colour: ${n}" aria-pressed="${cfg[k]===v}"><i class="${v==='havana'?'havana':''}" style="${c?`background:${c}`:''}"></i></button>`).join('')}</div>
+  <div class="cfg-row"><span class="cfg-k">Color</span>
+  <div class="sw">${OPTS[k].map(([v,n,c])=>`<button class="swatch" data-k="${k}" data-v="${v}" title="${n}" aria-label="Color: ${n}" aria-pressed="${cfg[k]===v}"><i class="${v==='havana'?'havana':''}" style="${c?`background:${c}`:''}"></i></button>`).join('')}</div>
   <span class="cfg-v" data-name="${k}">${nameOf(k)}</span></div>`).join('')}</div>
   <p class="small cfg-note">Colorways are concept renders. <button class="reset" data-reset>Reset</button></p>`;
 const paintCfg=()=>{
