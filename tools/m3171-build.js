@@ -118,18 +118,19 @@ function side(sign){
   const ep=new THREE.Group();g.add(ep);
   mk(epG,'metal','end',ep);
   mk(epFace,'ep','end',ep).position.z=1.99;
-  // hinge block: arm, hinge and temple share one frame turned back by the face-form angle, so the temple runs on in line with the end-piece
-  const hg=new THREE.Group();hg.position.set(66.9,0,1.4);hg.rotation.y=-WRAP;ep.add(hg);
-  const arm=mk(new RoundedBoxGeometry(2.4,4.5,6.0,3,.55),'metal','end',hg);arm.position.set(-1.05,12.28,-3.0);
-  const sfx=mk(linUV(new THREE.PlaneGeometry(5.4,3.9),[1/4,0,1/4,.5]),'ep','end',hg);sfx.position.set(.24,12.28,-3.0);sfx.rotation.y=Math.PI/2;
-  // hinge behind the end-piece: three knuckles on a pin, slotted screw on top
-  const HZ=-6.6,HX=-1.75;
-  mk(new THREE.CylinderGeometry(.42,.42,4.6,12),'dark','end',hg).position.set(HX,12.3,HZ);
-  for(let i=0;i<3;i++){const k=mk(new THREE.CylinderGeometry(.95,.95,1.15,20),'metal','end',hg);k.position.set(HX,10.8+i*1.5,HZ)}
-  const sh=mk(new THREE.CylinderGeometry(.95,.95,.35,20),'metal','end',hg);sh.position.set(HX,14.55,HZ);
-  const sl=mk(new THREE.BoxGeometry(1.5,.12,.22),'dark','end',hg);sl.position.set(HX,14.75,HZ);sl.rotation.y=.6;
-  // temple: local x runs back from the hinge, y up, z outward (thickness); front edge butts the end-piece arm
-  const tg=new THREE.Group();tg.position.set(-TT-.15,12.4,-6.0);tg.rotation.y=Math.PI/2;hg.add(tg);
+  // end-piece side + temple share one frame at the outer front corner, turned back by the face-form angle so the temple runs on in line.
+  // side piece traced from the side photograph: 6.5 mm long, the same 4.6 mm height as the temple, beaded rows on its outer face
+  const hg=new THREE.Group();hg.position.set(67.0,0,1.9);hg.rotation.y=-WRAP;ep.add(hg);
+  // same section as the temple where they meet (4.6 mm tall, temple thickness, same edge radius), outer faces flush: no step at the joint
+  const EPW=TT+.3,EPY=12.35-.15,EPH=4.6,EPL=6.0;
+  const arm=mk(new RoundedBoxGeometry(EPW,EPH,EPL,3,.15),'metal','end',hg);arm.position.set(-EPW/2,EPY,-EPL/2);
+  // beaded rows on the front 3.7 mm of the outer face, plain brushed behind it (as in the side photograph)
+  const sfx=mk(linUV(new THREE.PlaneGeometry(3.5,EPH-.3),[1/4,0,.195,.5]),'ep','end',hg);sfx.position.set(.09,EPY,-1.95);sfx.rotation.y=Math.PI/2;
+  const HZ=-EPL+.2,HX=-EPW/2; // hinge sits inside the joint, hidden like the real one
+  mk(new THREE.CylinderGeometry(.25,.25,3.7,12),'dark','end',hg).position.set(HX,EPY,HZ);
+  for(let i=0;i<3;i++){const k=mk(new THREE.CylinderGeometry(.5,.5,1.08,20),'metal','end',hg);k.position.set(HX,EPY-1.2+i*1.2,HZ)}
+  // temple: local x runs back from the hinge, y up, z outward (thickness); outer face flush with the end-piece, front edge butting it
+  const tg=new THREE.Group();tg.position.set(-TT-.15,12.35,-EPL);tg.rotation.y=Math.PI/2;hg.add(tg);
   mk(tBase,'brushed','temple',tg);mk(tTeal,'camo','temple',tg);
   // engraving on the diamond: two rings and a dividing line
   for(const [u,v] of [[72.1,-5.73],[69.3,-5.57]]){const r=mk(new THREE.TorusGeometry(.56,.11,8,24),'dark','temple',tg);r.position.set(u,v,TT+.17)}
