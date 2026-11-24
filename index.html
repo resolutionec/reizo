@@ -67,7 +67,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 
 .label{font-size:14px;line-height:1.65;border-left:1.5px solid var(--line);padding-left:14px}
 .label b{font-weight:700}
-.hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:clamp(56px,6vw,120px);align-items:end;width:100vw;margin-left:calc(50% - 50vw);padding:0 max(3vw,16px);box-sizing:border-box}
+.hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:clamp(56px,6vw,120px);align-items:end;width:100vw;margin-left:calc(50% - 50vw);padding:0 clamp(16px,11vw,240px) 0 max(3vw,16px);box-sizing:border-box}
 .home-stage .mount3d canvas{-webkit-mask-image:linear-gradient(to right,#000 77%,transparent 83.3%),linear-gradient(to bottom,#000 71%,transparent 79.4%);-webkit-mask-composite:source-in;mask-image:linear-gradient(to right,#000 77%,transparent 83.3%),linear-gradient(to bottom,#000 71%,transparent 79.4%);mask-composite:intersect} /* the model fades out at the stage edge instead of running under the wall label */
 .home-stage .hint{bottom:-30px}
 .hero+[data-cfg]{margin-top:clamp(56px,9vh,96px)} /* breathing room above the colour selection on the homepage */
@@ -816,7 +816,7 @@ applyMaterials();
 const VIEWS={brow:[.12,.45,1],end:[1,.35,.7],temple:[1,.15,-.3],lens:[.9,.08,.5]};
 let camGoal=null,resumeT=0,mode='home',baseDist=420;
 const fit=(w,h)=>{const a=w/h;baseDist=Math.max(mode==='home'?362:305,493/a); // 1.5x larger than before, capped to fit the stage at every angle
-  if(mode==='home'){controls.minDistance=baseDist/2;controls.maxDistance=baseDist}else{controls.minDistance=90;controls.maxDistance=720}};
+  if(mode==='home'){controls.minDistance=baseDist*.78;controls.maxDistance=baseDist} /* hero zoom limited to ~1.3x */else{controls.minDistance=90;controls.maxDistance=720}};
 function setMode(m){
   mode=m;controls.enableZoom=true;
   controls.autoRotate=!reduce;controls.autoRotateSpeed=m==='home'?1.6:.7;
