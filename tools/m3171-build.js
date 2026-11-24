@@ -93,7 +93,7 @@ const bandG=ribbon(ring(WIRE,.09),-1.9,.7,4);
 const TT=1.1; // temple thickness
 const sh2=(a)=>a.map(([x,y])=>V(x,y));
 function shapeWithHole(o,h){const s=new THREE.Shape(o);if(h){h=h.slice();if(THREE.ShapeUtils.isClockWise(h)===THREE.ShapeUtils.isClockWise(o))h.reverse();s.holes.push(new THREE.Path(h))}return s}
-const tBase=smooth(ext(shapeWithHole(sh2(GEO.TEMPLE.outer),sh2(GEO.TEMPLE.hole)),TT,.15,3,8));
+const tBase=smooth(ext(shapeWithHole(sh2(GEO.TEMPLE.outer),sh2(GEO.TEMPLE.hole)),TT,.1,3,8)); // rounded polished edges; colour section stands 0.1 mm proud of it, incl. the cutout
 const tTeal=smooth(ext(new THREE.Shape(sh2(GEO.TEMPLE.teal)),TT,.2,3,8)); // colour wraps the edges; flame and diamond stay metal
 // end-piece front plate traced from the front photograph: slanted inner end over the rim, beaded face
 const epShape=new THREE.Shape(sh2(GEO.EP));
@@ -145,9 +145,19 @@ function side(sign){
   // temple: local x runs back from the hinge, y up, z outward (thickness); outer face flush with the end-piece, front edge butting it
   const tg=new THREE.Group();tg.position.set(-TT-.15,12.17,-EPL);tg.rotation.y=Math.PI/2;tg.scale.y=EPH/4.6;hg.add(tg); // traced temple is 4.6 mm at the joint: scale to the end-piece height
   mk(tBase,'brushed','temple',tg);mk(tTeal,'camo','temple',tg);
-  // engraving on the diamond: two rings and a dividing line
-  for(const [u,v] of [[72.1,-5.73],[69.3,-5.57]]){const r=mk(new THREE.TorusGeometry(.56,.11,8,24),'dark','temple',tg);r.position.set(u,v,TT+.17)}
-  {const ln=mk(new THREE.BoxGeometry(.14,3.6,.08),'dark','temple',tg);ln.position.set(70.7,-5.65,TT+.16);ln.rotation.z=-.077}
+  // ornament retraced from the close-up: a crest plate pointed at both ends with concave flanks, a dividing line and two ring rivets,
+  // its hinge-side point running into the colour; set in a fine engraved outline
+  { const ca=Math.cos(-.078),sa=Math.sin(-.078),U0=71.0,V0=-5.62,h=1.8;
+    const X=(a,b)=>V(U0+a*ca-b*sa,V0+a*sa+b*ca);
+    const crest=(o)=>{const s=new THREE.Shape(),H=h+o;s.moveTo(X(5.6+o,0).x,X(5.6+o,0).y);
+      const q=(ca2,cb,a2,b2)=>{const c=X(ca2,cb),e=X(a2,b2);s.quadraticCurveTo(c.x,c.y,e.x,e.y)};
+      q(3.2,.35,2.4+o*.4,H);{const e=X(-2.4-o*.4,H);s.lineTo(e.x,e.y)}q(-3.3,.35,-5.4-o,0);
+      q(-3.3,-.35,-2.4-o*.4,-H);{const e=X(2.4+o*.4,-H);s.lineTo(e.x,e.y)}q(3.2,-.35,5.6+o,0);return s};
+    const groove=mk(new THREE.ShapeGeometry(crest(.14),24),'dark','temple',tg);groove.position.z=TT+.23;
+    const plate=mk(smooth(ext(crest(0),.06,.04,2,24)),'brushed','temple',tg);plate.position.z=TT+.22;
+    const ln=mk(new THREE.BoxGeometry(.1,2*h-.1,.06),'dark','temple',tg);{const p=X(0,0);ln.position.set(p.x,p.y,TT+.34)}ln.rotation.z=-.078;
+    for(const a of [-1.45,1.45]){const p=X(a,0);const r=mk(new THREE.TorusGeometry(.5,.09,8,24),'dark','temple',tg);r.position.set(p.x,p.y,TT+.34);
+      const c=mk(new THREE.CircleGeometry(.22,16),'dark','temple',tg);c.position.set(p.x,p.y,TT+.33)} }
   // nose pad assembly retraced from the close-ups: a flat pad arm welded down the back of the rim beside the bridge foot,
   // a pad box with a small screw at the top, a clamp tip with a screw at the bottom, and the teardrop pad hung from the box
   const RB=-2.25; // back face of the rim (local z)
