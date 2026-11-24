@@ -752,24 +752,25 @@ function side(sign){
   // side piece traced from the side photograph: 6.5 mm long, the same 4.6 mm height as the temple, beaded rows on its outer face
   const hg=new THREE.Group();hg.position.set(67.0,0,1.9);hg.rotation.y=-WRAP;ep.add(hg);
   // same section as the temple where they meet (4.6 mm tall, temple thickness, same edge radius), outer faces flush: no step at the joint
-  const EPW=2.0,EPY=12.03,EPH=4.35,EPL=6.0; // solid block, 3 mm deep inward (wider than the temple, as in the close-up); outer faces flush // outer end of the front plate: 9.85-14.2 mm
+  const EPW=1.4,EPY=12.03,EPH=4.35,EPL=6.0; // bent strip (underside view): same thickness as the front plate, beaded edges
   // corner: the strip turns through a 45° chamfered face (close-up photo), so front plate, chamfer and side read as one bent piece
   // one solid block seen from above: front flush with the front plate, outer front corner cut at 45° (the chamfered face in the close-up)
   const CH=1.7,FZ=-.15;
   { // outer front corner swept round on a radius, so the front plate flows into the side piece (top view)
-    const R=1.7,pts=[V(-EPW,EPL),V(0,EPL),V(0,-FZ+R)];
+    const R=1.25,pts=[V(-EPW,EPL),V(0,EPL),V(0,-FZ+R)];
     for(let i=1;i<12;i++){const t=Math.PI/2*i/12;pts.push(V(-R+R*Math.cos(t),-FZ+R-R*Math.sin(t)))}
     pts.push(V(-R,-FZ),V(-EPW,-FZ));
     let bg=new THREE.ExtrudeGeometry(new THREE.Shape(pts),{depth:EPH-.3,bevelEnabled:true,bevelThickness:.15,bevelSize:.15,bevelSegments:2,curveSegments:12});
     bg.rotateX(-Math.PI/2);bg.translate(0,EPY-EPH/2+.15,0);bg=smooth(bg);mk(bg,'metal','end',hg); }
   // beaded panel on the front 3.7 mm of the outer side face, plain brushed behind it (side photograph)
   const sfx=mk(linUV(new THREE.PlaneGeometry(3.3,EPH-.3),[1/4,0,.195,.5]),'ep','end',hg);sfx.position.set(.09,EPY,-CH-1.75);sfx.rotation.y=Math.PI/2;
-  // hinge screw seen from below at the joint
-  { const hs=mk(new THREE.CylinderGeometry(.55,.55,.3,16),'metal','end',hg);hs.position.set(-EPW/2,EPY-EPH/2-.12,-EPL+.4);
-    for(const r of [0,Math.PI/2]){const sl=mk(new THREE.BoxGeometry(.7,.1,.1),'dark','end',hg);sl.position.set(-EPW/2,EPY-EPH/2-.28,-EPL+.4);sl.rotation.y=r} }
-  const HZ=-EPL+.2,HX=-EPW/2; // hinge sits inside the joint, hidden like the real one
-  mk(new THREE.CylinderGeometry(.25,.25,3.7,12),'dark','end',hg).position.set(HX,EPY,HZ);
-  for(let i=0;i<3;i++){const k=mk(new THREE.CylinderGeometry(.5,.5,1.08,20),'metal','end',hg);k.position.set(HX,EPY-1.2+i*1.2,HZ)}
+  // hinge barrel tucked inside the strip's bend (seen from below): a round knuckle with its screw head on the underside
+  const HZ=-EPL+1.1,HX=-EPW-.85,BH=EPH-.9;
+  mk(new THREE.CylinderGeometry(.9,.9,BH,24),'metal','end',hg).position.set(HX,EPY,HZ);
+  mk(new THREE.CylinderGeometry(.92,.92,.12,24),'dark','end',hg).position.set(HX,EPY+.35,HZ); // knuckle seam
+  { const sh=mk(new THREE.CylinderGeometry(.6,.6,.25,20),'metal','end',hg);sh.position.set(HX,EPY-BH/2-.12,HZ);
+    const sl=mk(new THREE.BoxGeometry(.9,.1,.12),'dark','end',hg);sl.position.set(HX,EPY-BH/2-.26,HZ);sl.rotation.y=.5;
+    const lf=mk(new RoundedBoxGeometry(1.2,BH-.2,1.6,2,.2),'metal','end',hg);lf.position.set(HX+.75,EPY,HZ-.5); } // temple leaf joining barrel to temple
   // temple: local x runs back from the hinge, y up, z outward (thickness); outer face flush with the end-piece, front edge butting it
   const tg=new THREE.Group();tg.position.set(-TT-.15,12.17,-EPL);tg.rotation.y=Math.PI/2;tg.scale.y=EPH/4.6;hg.add(tg); // traced temple is 4.6 mm at the joint: scale to the end-piece height
   mk(tBase,'brushed','temple',tg);mk(tTeal,'camo','temple',tg);
