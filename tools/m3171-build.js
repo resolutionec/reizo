@@ -97,7 +97,8 @@ const tBase=smooth(ext(shapeWithHole(sh2(GEO.TEMPLE.outer),sh2(GEO.TEMPLE.hole))
 const tTeal=smooth(ext(new THREE.Shape(sh2(GEO.TEMPLE.teal)),TT,.2,3,8)); // colour wraps the edges; flame and diamond stay metal
 // end-piece front plate traced from the front photograph: slanted inner end over the rim, beaded face
 const epShape=new THREE.Shape(sh2(GEO.EP));
-let epG=ext(epShape,2.6,.3,3);epG.translate(0,0,-1.0);epG=smooth(epG);
+// the end-piece is one bent strip, 1.4 mm thick like the temple: front plate here, the side piece continues it round the corner
+let epG=ext(epShape,1.1,.15,3);epG.translate(0,0,.65);epG=smooth(epG);
 const epFace=linUV(new THREE.ShapeGeometry(epShape,8),[1/4,0,.195,-1.859]);
 // nose pad: teardrop traced from the side photograph (narrow top, full lower half)
 function padShape(){const D=GEO.PAD,n=D.length,vs=D.map(d=>d[1]),v0=vs[0],v1=vs[n-1];
