@@ -10,7 +10,7 @@ The Reizo website (reseller / distributor) is a single `index.html` with hash ro
 - polygonOffset on metal.
 
 Conventions:
-- Fonts: League Spartan (headings) and Courier Prime (text). Cream `#f4f0e8` background. Light mode only.
+- Fonts: League Spartan (headings) and Courier Prime (text). White `#ffffff` background. Light mode only.
 - Default colourway: Teal / Antique Gold. Four fixed SKU colourways (enamel / metal); clear demo lens.
 - Don't trace or copy other brands' frame designs. M3171 is traced with the maker's permission (reseller account).
 - Verify visual changes by rendering in headless Chrome (desktop 1280 and mobile 390) before publishing. Check for horizontal overflow.
