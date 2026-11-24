@@ -109,7 +109,7 @@ html.lenis,html.lenis body{height:auto}.lenis.lenis-stopped{overflow:clip}.lenis
 .room-card{text-decoration:none;display:flex;flex-direction:column;gap:10px}
 .room-card .pic{aspect-ratio:4/3;background:var(--wall);border:1px solid var(--hair);display:grid;place-items:center;overflow:hidden;transition:border-color .25s}
 .room-card:hover .pic{border-color:var(--line)}
-.room-card .pic img{width:100%;height:100%;object-fit:cover;mix-blend-mode:multiply;background:var(--mount)}
+.room-card .pic img{width:100%;height:100%;object-fit:contain;padding:6%;box-sizing:border-box;mix-blend-mode:multiply;background:var(--mount)} /* whole frame front visible */
 .numeral{font:800 clamp(40px,5vw,64px)/1 "League Spartan",sans-serif;color:var(--hair)}
 .room-card span{font-size:14px}
 
