@@ -75,19 +75,19 @@ const brG=new THREE.Group();brG.position.z=-.75;frame.add(brG);
 let br=ext(brShape,1.5,.3,3);br.translate(0,0,-1.5);mk(smooth(br),'metal','brow',brG);
 mk(linUV(new THREE.ShapeGeometry(brShape,12),GEO.BRUV),'br','brow',brG).position.z=.39;
 
-const IN=GEO.IN,OUT=GEO.OUT;
+const {LENS,EN_IN,EN_OUT,WIRE}=GEO; // traced: lens edge, enamel ring inner/outer, eyewire outer
 function lensGeo(){ // gently curved demo lens filling the rim opening
-  const pts=ring(IN,.15);const inside=(x,y)=>{let c=false;for(let i=0,j=pts.length-1;i<pts.length;j=i++){const a=pts[i],b=pts[j];if((a.y>y)!==(b.y>y)&&x<(b.x-a.x)*(y-a.y)/(b.y-a.y)+a.x)c=!c}return c};
+  const pts=ring(LENS,.3);const inside=(x,y)=>{let c=false;for(let i=0,j=pts.length-1;i<pts.length;j=i++){const a=pts[i],b=pts[j];if((a.y>y)!==(b.y>y)&&x<(b.x-a.x)*(y-a.y)/(b.y-a.y)+a.x)c=!c}return c};
   const st=.6,pos=[],idx=[],ids=new Map(),R=160;
   const vid=(i,j)=>{const k=i+'|'+j;if(!ids.has(k)){const x=i*st,y=j*st;ids.set(k,pos.length/3);pos.push(x,y,-.3-((x-C.x)**2+(y-C.y)**2)/(2*R)*.6)}return ids.get(k)};
   for(let i=Math.floor(10/st);i<=Math.ceil(61/st);i++)for(let j=Math.floor(-24/st);j<=Math.ceil(24/st);j++){
     if(!inside((i+.5)*st,(j+.5)*st))continue;const a=vid(i,j),b=vid(i+1,j),c=vid(i+1,j+1),d=vid(i,j+1);idx.push(a,b,c,a,c,d)}
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setIndex(idx);g.computeVertexNormals();return g}
 const lensG=lensGeo();
-// rim: titanium ring (outer wall 0.55 mm beyond the enamel), enamel colour ring on the front, engraved/knurled side band
-let rimG=ext(annulus(ring(OUT,.3),ring(IN,.25)),2.6,.25,3);rimG.translate(0,0,-1.9);rimG=smooth(rimG);
-let enG=ext(annulus(ring(OUT,-.14),ring(IN,.2)),.3,.12,3);enG.translate(0,0,1.0);enG=smooth(enG);
-const bandG=ribbon(ring(OUT,.64),-1.9,.7,4);
+// rim: titanium eyewire (traced outer edge), enamel colour ring on the front, engraved/knurled side band
+let rimG=ext(annulus(ring(WIRE,-.25),ring(LENS,.25)),2.6,.25,3);rimG.translate(0,0,-1.9);rimG=smooth(rimG);
+let enG=ext(annulus(ring(EN_OUT,-.12),ring(EN_IN,.12)),.3,.12,3);enG.translate(0,0,1.0);enG=smooth(enG);
+const bandG=ribbon(ring(WIRE,.09),-1.9,.7,4);
 
 // temple centre line (side profile, mm): straight run sloping 4.4° down, a bend over the ear, then the drop to the tip
 const TL=145,TS=104,TR=8,TB=.62,tailA=-.08-TB; // lengths, bend radius, bend angle
