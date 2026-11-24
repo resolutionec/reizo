@@ -833,7 +833,7 @@ applyMaterials();
 const VIEWS={brow:[.12,.45,1],end:[1,.35,.7],temple:[1,.15,-.3],lens:[.9,.08,.5]};
 let camGoal=null,resumeT=0,mode='home',baseDist=420;
 const fit=(w,h)=>{const a=w/h;baseDist=Math.max(mode==='home'?362:305,493/a); // 1.5x larger than before, capped to fit the stage at every angle
-  if(mode==='home'){controls.minDistance=baseDist*.78;controls.maxDistance=baseDist} /* hero zoom limited to ~1.3x */else{controls.minDistance=90;controls.maxDistance=720}};
+  if(mode==='home'){controls.minDistance=baseDist*.78;controls.maxDistance=baseDist} /* hero zoom limited to ~1.3x */else{controls.minDistance=baseDist*.65;controls.maxDistance=baseDist*1.6}}; /* product page: zoom in limited to ~1.5x */
 function setMode(m){
   mode=m;controls.enableZoom=true;
   controls.autoRotate=!reduce;controls.autoRotateSpeed=m==='home'?1.6:.7;
