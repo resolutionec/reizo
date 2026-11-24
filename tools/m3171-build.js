@@ -123,7 +123,7 @@ function side(sign){
   // side piece traced from the side photograph: 6.5 mm long, the same 4.6 mm height as the temple, beaded rows on its outer face
   const hg=new THREE.Group();hg.position.set(67.0,0,1.9);hg.rotation.y=-WRAP;ep.add(hg);
   // same section as the temple where they meet (4.6 mm tall, temple thickness, same edge radius), outer faces flush: no step at the joint
-  const EPW=TT+.3,EPY=12.35-.15,EPH=4.6,EPL=6.0;
+  const EPW=TT+.3,EPY=12.03,EPH=4.35,EPL=6.0; // outer end of the front plate: 9.85-14.2 mm
   const arm=mk(new RoundedBoxGeometry(EPW,EPH,EPL,3,.15),'metal','end',hg);arm.position.set(-EPW/2,EPY,-EPL/2);
   // beaded rows on the front 3.7 mm of the outer face, plain brushed behind it (as in the side photograph)
   const sfx=mk(linUV(new THREE.PlaneGeometry(3.5,EPH-.3),[1/4,0,.195,.5]),'ep','end',hg);sfx.position.set(.09,EPY,-1.95);sfx.rotation.y=Math.PI/2;
@@ -131,16 +131,27 @@ function side(sign){
   mk(new THREE.CylinderGeometry(.25,.25,3.7,12),'dark','end',hg).position.set(HX,EPY,HZ);
   for(let i=0;i<3;i++){const k=mk(new THREE.CylinderGeometry(.5,.5,1.08,20),'metal','end',hg);k.position.set(HX,EPY-1.2+i*1.2,HZ)}
   // temple: local x runs back from the hinge, y up, z outward (thickness); outer face flush with the end-piece, front edge butting it
-  const tg=new THREE.Group();tg.position.set(-TT-.15,12.35,-EPL);tg.rotation.y=Math.PI/2;hg.add(tg);
+  const tg=new THREE.Group();tg.position.set(-TT-.15,12.17,-EPL);tg.rotation.y=Math.PI/2;tg.scale.y=EPH/4.6;hg.add(tg); // traced temple is 4.6 mm at the joint: scale to the end-piece height
   mk(tBase,'brushed','temple',tg);mk(tTeal,'camo','temple',tg);
   // engraving on the diamond: two rings and a dividing line
   for(const [u,v] of [[72.1,-5.73],[69.3,-5.57]]){const r=mk(new THREE.TorusGeometry(.56,.11,8,24),'dark','temple',tg);r.position.set(u,v,TT+.17)}
   {const ln=mk(new THREE.BoxGeometry(.14,3.6,.08),'dark','temple',tg);ln.position.set(70.7,-5.65,TT+.16);ln.rotation.z=-.077}
-  // nose pad on a pad arm from behind the bridge foot; pad faces the side of the nose
-  const pa=new THREE.CatmullRomCurve3([[10.6,3.4,-1.6],[11.7,2.0,-4.0],[11.4,-.4,-6.2],[10.5,-1.3,-6.9]].map(a=>new THREE.Vector3(...a)));
-  mk(new THREE.TubeGeometry(pa,24,.36,8),'metal','brow',g);
-  const box=mk(new RoundedBoxGeometry(1.5,1.9,1.2,2,.3),'metal','brow',g);box.position.set(10.3,-1.3,-7.0);box.rotation.y=.93;
-  const pad=mk(padG,'brushed','brow',g);pad.position.set(9.5,0,-7.6);pad.rotation.y=.93;
+  // nose pad assembly retraced from the close-ups: a flat pad arm welded down the back of the rim beside the bridge foot,
+  // a pad box with a small screw at the top, a clamp tip with a screw at the bottom, and the teardrop pad hung from the box
+  const RB=-2.25; // back face of the rim (local z)
+  const bar=mk(new RoundedBoxGeometry(.9,10.4,.6,2,.2),'metal','brow',g);bar.position.set(11.35,-.9,RB-.3);bar.rotation.z=.05;
+  const pbox=mk(new RoundedBoxGeometry(1.6,1.7,1.5,2,.3),'metal','brow',g);pbox.position.set(11.0,3.3,RB-1.15);
+  const scr1=mk(new THREE.SphereGeometry(.38,16,8,0,Math.PI*2,0,Math.PI/2),'metal','brow',g);scr1.position.set(11.0,4.15,RB-1.15);scr1.scale.y=.45;
+  const tip=mk(new RoundedBoxGeometry(1.2,1.6,1.1,2,.25),'metal','brow',g);tip.position.set(11.55,-6.6,RB-.75);
+  const scr2=mk(new THREE.CylinderGeometry(.45,.45,.25,16),'dark','brow',g);scr2.position.set(11.55,-6.6,RB-1.37);scr2.rotation.x=Math.PI/2;
+  for(const r of [0,Math.PI/2]){const sl=mk(new THREE.BoxGeometry(.6,.1,.08),'metal','brow',g);sl.position.set(11.55,-6.6,RB-1.52);sl.rotation.z=r}
+  // stem from the pad box down to the pad's back
+  const pad=mk(padG,'brushed','brow',g);pad.position.set(10.0,-.4,RB-2.5);pad.rotation.y=.93;
+  { // stem from the pad box to a cup on the back of the pad, near its top
+    const A=new THREE.Vector3(11.0,3.0,RB-1.4),Bp=new THREE.Vector3(10.0+.8*.45,2.0,RB-2.5+.6*.45),d=Bp.clone().sub(A);
+    const st=mk(new THREE.CylinderGeometry(.3,.3,d.length(),10),'metal','brow',g);st.position.copy(A).addScaledVector(d,.5);
+    st.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());
+    const cup=mk(new THREE.CylinderGeometry(.75,.75,.4,16),'metal','brow',g);cup.position.copy(Bp);cup.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(.8,0,.6))}
 }
 side(1);side(-1);
 
