@@ -123,10 +123,19 @@ function side(sign){
   // side piece traced from the side photograph: 6.5 mm long, the same 4.6 mm height as the temple, beaded rows on its outer face
   const hg=new THREE.Group();hg.position.set(67.0,0,1.9);hg.rotation.y=-WRAP;ep.add(hg);
   // same section as the temple where they meet (4.6 mm tall, temple thickness, same edge radius), outer faces flush: no step at the joint
-  const EPW=TT+.3,EPY=12.03,EPH=4.35,EPL=6.0; // outer end of the front plate: 9.85-14.2 mm
-  const arm=mk(new RoundedBoxGeometry(EPW,EPH,EPL,3,.15),'metal','end',hg);arm.position.set(-EPW/2,EPY,-EPL/2);
-  // beaded rows on the front 3.7 mm of the outer face, plain brushed behind it (as in the side photograph)
-  const sfx=mk(linUV(new THREE.PlaneGeometry(3.5,EPH-.3),[1/4,0,.195,.5]),'ep','end',hg);sfx.position.set(.09,EPY,-1.95);sfx.rotation.y=Math.PI/2;
+  const EPW=2.0,EPY=12.03,EPH=4.35,EPL=6.0; // solid block, 3 mm deep inward (wider than the temple, as in the close-up); outer faces flush // outer end of the front plate: 9.85-14.2 mm
+  // corner: the strip turns through a 45° chamfered face (close-up photo), so front plate, chamfer and side read as one bent piece
+  // one solid block seen from above: front flush with the front plate, outer front corner cut at 45° (the chamfered face in the close-up)
+  const CH=1.1,FZ=-.15;
+  { const sh=new THREE.Shape([V(-EPW,EPL),V(0,EPL),V(0,-FZ+CH),V(-CH,-FZ),V(-EPW,-FZ)]); // (x, -z)
+    let bg=new THREE.ExtrudeGeometry(sh,{depth:EPH-.3,bevelEnabled:true,bevelThickness:.15,bevelSize:.15,bevelSegments:2});
+    bg.rotateX(-Math.PI/2);bg.translate(0,EPY-EPH/2+.15,0);bg=smooth(bg);mk(bg,'metal','end',hg);
+    const cf=mk(linUV(new THREE.PlaneGeometry(CH*Math.SQRT2-.2,EPH-.4),[1/4,0,.195,.5]),'ep','end',hg);cf.position.set(-CH/2+.07,EPY,-FZ-CH/2+.07);cf.rotation.y=Math.PI/4; }
+  // beaded panel on the front 3.7 mm of the outer side face, plain brushed behind it (side photograph)
+  const sfx=mk(linUV(new THREE.PlaneGeometry(3.3,EPH-.3),[1/4,0,.195,.5]),'ep','end',hg);sfx.position.set(.09,EPY,-CH-1.75);sfx.rotation.y=Math.PI/2;
+  // hinge screw seen from below at the joint
+  { const hs=mk(new THREE.CylinderGeometry(.55,.55,.3,16),'metal','end',hg);hs.position.set(-EPW/2,EPY-EPH/2-.12,-EPL+.4);
+    for(const r of [0,Math.PI/2]){const sl=mk(new THREE.BoxGeometry(.7,.1,.1),'dark','end',hg);sl.position.set(-EPW/2,EPY-EPH/2-.28,-EPL+.4);sl.rotation.y=r} }
   const HZ=-EPL+.2,HX=-EPW/2; // hinge sits inside the joint, hidden like the real one
   mk(new THREE.CylinderGeometry(.25,.25,3.7,12),'dark','end',hg).position.set(HX,EPY,HZ);
   for(let i=0;i<3;i++){const k=mk(new THREE.CylinderGeometry(.5,.5,1.08,20),'metal','end',hg);k.position.set(HX,EPY-1.2+i*1.2,HZ)}
