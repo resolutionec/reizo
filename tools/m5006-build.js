@@ -19,6 +19,14 @@ const ENG5=canvasTex(512,128,(g,w,h)=>{g.fillStyle='#e6e6e6';g.fillRect(0,0,w,h)
   g.strokeStyle='#2a2a2a';g.lineCap='round';
   for(let x=0;x<w;x+=96){g.lineWidth=5;g.beginPath();g.moveTo(x+8,h/2+18);g.bezierCurveTo(x+30,h/2-40,x+64,h/2+40,x+90,h/2-14);g.stroke();
     g.lineWidth=3.5;g.beginPath();g.ellipse(x+48,h/2,12,6,.6,0,7);g.stroke();g.beginPath();g.moveTo(x+60,h/2+22);g.quadraticCurveTo(x+76,h/2+2,x+70,h/2-22);g.stroke()}});
+// tip collar: C-shaped scroll curls between two plain rims (tip close-up); one tile = a quarter of the circumference
+const COL5=canvasTex(256,128,(g,w,h)=>{g.fillStyle='#e4e4e4';g.fillRect(0,0,w,h);g.fillStyle='#9a9a9a';g.fillRect(0,0,w,10);g.fillRect(0,h-10,w,10);
+  g.strokeStyle='#1e1e1e';g.lineCap='round';g.lineWidth=9;
+  for(const [cx,dir] of [[64,1],[192,-1]]){g.beginPath();g.arc(cx,h/2,24,dir>0?.35*Math.PI:1.35*Math.PI,dir>0?2.1*Math.PI:3.1*Math.PI);g.stroke();
+    g.beginPath();g.arc(cx+dir*8,h/2+4,10,0,Math.PI*1.6);g.stroke();
+    g.beginPath();g.moveTo(cx+dir*26,h/2+6);g.quadraticCurveTo(cx+dir*48,h/2+30,cx+dir*60,h/2+4);g.stroke()}});
+COL5.map.repeat.set(4,1);COL5.bump.repeat.set(4,1);
+const armMap5=texLoader.load(G5.ARMTEX);armMap5.colorSpace=THREE.SRGBColorSpace;armMap5.anisotropy=8;const armBump5=texLoader.load(G5.ARMTEX); // end-piece engraving from the close-up
 const brMap5=texLoader.load(G5.BRTEX);brMap5.colorSpace=THREE.SRGBColorSpace;brMap5.anisotropy=8;const brBump5=texLoader.load(G5.BRTEX);
 const M5={metal:{},brushed:{},eng:{},br:{},lens:{},
   dark:new THREE.MeshStandardMaterial({color:0x141414,metalness:.4,roughness:.45,...PO(-3)}),
@@ -28,6 +36,8 @@ for(const [k,f] of Object.entries(FIN5)){
   M5.metal[k]=new THREE.MeshStandardMaterial({color:f.c,metalness:1,roughness:f.r*.7,envMapIntensity:1.9,...PO(-1)});
   M5.brushed[k]=new THREE.MeshStandardMaterial({color:f.c,metalness:.85,roughness:f.r+.12,envMapIntensity:1.6,...PO(-1)});
   M5.eng[k]=new THREE.MeshStandardMaterial({color:f.c,map:ENG5.map,bumpMap:ENG5.bump,bumpScale:.7,metalness:.85,roughness:f.r,envMapIntensity:1.8,...PO(-2)});
+  (M5.col||(M5.col={}))[k]=new THREE.MeshStandardMaterial({color:f.c,map:COL5.map,bumpMap:COL5.bump,bumpScale:.6,metalness:.85,roughness:f.r*.9,envMapIntensity:1.8,...PO(-2)});
+  (M5.arm||(M5.arm={}))[k]=new THREE.MeshStandardMaterial({color:f.c,map:armMap5,bumpMap:armBump5,bumpScale:.5,metalness:.82,roughness:f.r,envMapIntensity:1.8,...PO(-2)});
   M5.br[k]=new THREE.MeshStandardMaterial({color:f.c,map:brMap5,bumpMap:brBump5,bumpScale:.9,metalness:.82,roughness:f.r,envMapIntensity:1.8,...PO(-2)});
 }
 for(const [k,w] of Object.entries(WAYS5))M5.lens[k]=new THREE.MeshPhysicalMaterial({color:0xffffff,map:tintTex(w.lens),transparent:true,roughness:.04,metalness:0,clearcoat:1,clearcoatRoughness:.03,envMapIntensity:1.4,depthWrite:false,side:THREE.DoubleSide});
@@ -76,9 +86,9 @@ function side5(sign){
     {const gg=new THREE.Group();gg.scale.x=-1;gg.position.x=2*(tx-.4);g.add(gg);hexPost(gg,tx-.4,ty+.2,2.6)} // points outward, toward the end-piece
     const tb=mk(new RoundedBoxGeometry(1.9,3.6,2.4,2,.4),'k:metal','end',g);tb.position.set(fx,ty+.2,-.9); }
   const armL=EX-ex;const arm=mk(new RoundedBoxGeometry(armL,2.6,1.1,2,.3),'k:metal','end',g);arm.position.set(ex+armL/2+.6,EY,-.2);
-  const armF=mk(linUV(new THREE.PlaneGeometry(armL-.6,2.2),[1/(armL),0,.5,.5]),'k:eng','end',g);armF.position.set(ex+armL/2+.6,EY,.37);
+  const armF=mk(linUV(new THREE.PlaneGeometry(armL-.6,2.4),[1/(armL-.6),.5,1/2.4,.5]),'k:arm','end',g);armF.position.set(ex+armL/2+.6,EY,.37);
   const back=mk(new RoundedBoxGeometry(1.1,2.6,9,2,.3),'k:metal','end',g);back.position.set(EX+.35,EY,-4.6);
-  const bF=mk(linUV(new THREE.PlaneGeometry(8.2,2.2),[1/8.2,.5,.5,.5]),'k:eng','end',g);bF.position.set(EX+.92,EY,-4.6);bF.rotation.y=Math.PI/2;
+  const bF=mk(linUV(new THREE.PlaneGeometry(8.2,2.4),[-1/8.2,.5,1/2.4,.5]),'k:arm','end',g);bF.position.set(EX+.92,EY,-4.6);bF.rotation.y=Math.PI/2;
   // hinge block and screw at the back of the end-piece
   const hb=mk(new RoundedBoxGeometry(1.6,2.8,2.2,2,.3),'k:metal','end',g);hb.position.set(EX+.1,EY,-9.9);
   const hs=mk(new THREE.CylinderGeometry(.45,.45,.25,14),'k:dark','end',g);hs.position.set(EX+.1,EY-1.5,-9.9);
@@ -99,9 +109,12 @@ function side5(sign){
   mk(rod,'k:brushed','temple',tg);
   // tip: engraved collar and a domed end cap
   const end=crv.getPointAt(1),dir=crv.getTangentAt(1),re=rad(1);
-  const col=mk(new THREE.CylinderGeometry(re+.18,re+.12,1.3,24),'k:eng','temple',tg);col.position.copy(end).addScaledVector(dir,-.35);col.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir);
-  { const g2=new THREE.CylinderGeometry(re*.98,re+.18,.25,24);const bead=mk(g2,'k:metal','temple',tg);bead.position.copy(end).addScaledVector(dir,-1.05);bead.quaternion.copy(col.quaternion); }
-  const cap=mk(new THREE.SphereGeometry(re+.05,22,14,0,Math.PI*2,0,Math.PI/2),'k:tip','temple',tg);cap.position.copy(end).addScaledVector(dir,.3);cap.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir);cap.scale.y=1.15;
+  // collar: a pronounced engraved band, ~30% wider than the rod, flaring out of the rod with a raised rim at each edge; the domed cap comes out of it
+  const q=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir),CR=re*1.3,cc=end.clone().addScaledVector(dir,-.6);
+  const prof=[[re*.98,-1.9],[re+.04,-1.6],[CR-.05,-1.12],[CR+.13,-1.02],[CR+.13,-.86],[CR,-.78],[CR,.78],[CR+.13,.86],[CR+.13,1.02],[CR-.05,1.12],[CR-.2,1.16]].map(([r,h])=>new THREE.Vector2(r,h));
+  const lat=mk(new THREE.LatheGeometry(prof,40),'k:metal','temple',tg);lat.position.copy(cc);lat.quaternion.copy(q);
+  const band=mk(new THREE.CylinderGeometry(CR+.015,CR+.015,1.5,40,1,true),'k:col','temple',tg);band.position.copy(cc);band.quaternion.copy(q);
+  const cap=mk(new THREE.SphereGeometry(CR-.2,24,16,0,Math.PI*2,0,Math.PI/2),'k:tip','temple',tg);cap.position.copy(cc).addScaledVector(dir,1.14);cap.quaternion.copy(q);cap.scale.y=.95;
   // nose pad (retraced from the rear close-up): round wire arm leaves the clamp behind the lens, hooks back and drops straight down
   // to a pad box with a screw on its back face; a long, narrow, curved titanium pad hangs from the box facing the nose
   const pa=new THREE.CatmullRomCurve3([[nx-.2,ny-1.6,-1.7],[nx-.35,ny-1.1,-3.1],[nx-.5,ny-2.2,-4.0],[nx-.6,ny-4.4,-4.15],[nx-.6,ny-6.0,-4.1]].map(a=>new THREE.Vector3(...a)));
