@@ -62,7 +62,7 @@ function lensFin(g,x,y,up,down){ // rounded blade that follows the lens edge: sw
   const a=walk(1,Math.max(up,down)+1),b=walk(-1,Math.max(up,down)+1),A=(a[a.length-1][1]>b[b.length-1][1])?a:b,B=A===a?b:a;
   const clip=(arr,lim)=>{const o=[];let acc=0,prev=L[i0];for(const q of arr){acc+=Math.hypot(q[0]-prev[0],q[1]-prev[1]);prev=q;if(acc>lim)break;o.push(q)}return o};
   const pts=[...clip(A,up).reverse(),L[i0],...clip(B,down)].map(([px,py])=>{const dx=px-34,dy=py,r=Math.hypot(dx,dy),o=.15;
-    return new THREE.Vector3(px+dx/r*o,py+dy/r*o,.3-((px-34)**2+py*py)/440)});
+    return new THREE.Vector3(px+dx/r*o,py+dy/r*o,.55)});
   const c=new THREE.CatmullRomCurve3(pts,false,'centripetal');mk(new THREE.TubeGeometry(c,48,.7,14,false),'k:metal','end',g);
   for(const t of [0,1]){const e=mk(new THREE.SphereGeometry(.7,14,10),'k:metal','end',g);e.position.copy(c.getPoint(t))}}
 function hexPost(g,x,y,len){ // a bolt through the lens: elongated hex knob lying on the lens front with an axial hex head at its tip,
@@ -93,6 +93,7 @@ function side5(sign){
     const sl=mk(new THREE.BoxGeometry(1.35,.3,.12),'k:dark','end',g);sl.position.set(bx,by,1.66);sl.rotation.z=-.05;
     // fin: a tall rounded blade standing on the lens edge, longer below the neck than above
     lensFin(g,nx+.35,yb,3.6,4.5);
+    {const b=mk(new THREE.SphereGeometry(1,20,14),'k:metal','end',g);b.scale.set(1.1,1.25,.62);b.position.set(nx+.55,yb,.6)}
     // square block joining the fin to the bridge leg
     const jb=mk(new RoundedBoxGeometry(1.8,1.9,1.5,2,.3),'k:metal','end',g);jb.position.set(nx-1.0,yb,.45);
     const sk=mk(new THREE.CylinderGeometry(.38,.38,1.3-zb,12),'k:metal','end',g);sk.rotation.x=Math.PI/2;sk.position.set(bx,by,(1.3+zb)/2);
@@ -110,6 +111,7 @@ function side5(sign){
     nk.absarc(tx,ty,1.6,Math.PI*.3,Math.PI*1.7,false);nk.quadraticCurveTo(mx,ty-.7,FX-.3,FY-1.1);nk.closePath();
     let ng=ext(nk,.8,.32,4,24);ng.translate(0,0,.1);mk(smooth(ng),'k:metal','end',g);
     lensFin(g,FX,FY,3.9,3.7);
+    for(const [x,y,sx,sy] of [[FX-.2,FY-.05,1.1,1.25],[FX+.7,FY+.3,1.0,1.3]]){const b=mk(new THREE.SphereGeometry(1,20,14),'k:metal','end',g);b.scale.set(sx,sy,.62);b.position.set(x,y,.6)} // fillets: neck->fin, fin->arm
     // engraved face of the arm, UVs set per traced point
     const P=G5.EPF,pts=P.map(([x,y])=>V(x,y)),tri=THREE.ShapeUtils.triangulateShape(pts,[]),pos=[],uv=[];
     for(const [x,y,u,v] of P){pos.push(x,y,0);uv.push(u,v)}
@@ -138,7 +140,7 @@ function side5(sign){
   // each side, threaded on the slim rod that continues from the hinge into the temple
   { const U0=2.5,U1=34,N=64,RS=40,pos=[],idx=[];
     for(let i=0;i<=N;i++){const u=U0+(U1-U0)*i/N,e=Math.min(1,(u-U0)/3,(U1-u)/6),sm=e*e*(3-2*e),h=.7+.6*sm,t=.62+.18*sm,yc=-.2-.007*u;
-      for(let j=0;j<=RS;j++){const th=j/RS*Math.PI*2,c=Math.cos(th),sn=Math.sin(th),gr=1-.28*sm*Math.exp(-((sn/.22)**2)); // groove at mid-height on both faces
+      for(let j=0;j<=RS;j++){const th=j/RS*Math.PI*2,c=Math.cos(th),sn=Math.sin(th),q=Math.abs(sn),st=1/(1+Math.exp(-(.58-q)*40)),gr=(.58+.42*st)*(1-.12*sm*Math.exp(-((sn/.12)**2))); // raised middle band with a step down to the top and bottom ledges; fine centre line
         pos.push(-.1+t*c*gr,yc+h*sn,-u)}}
     for(let i=0;i<N;i++)for(let j=0;j<RS;j++){const a=i*(RS+1)+j,b=a+RS+1;idx.push(a,b,a+1,b,b+1,a+1)}
     const sg=new THREE.BufferGeometry();sg.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));sg.setIndex(idx);sg.computeVertexNormals();mk(sg,'k:metal','temple',tg);
