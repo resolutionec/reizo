@@ -43,12 +43,17 @@ for(const [k,f] of Object.entries(FIN5)){
 for(const [k,w] of Object.entries(WAYS5))M5.lens[k]=new THREE.MeshPhysicalMaterial({color:0xffffff,map:tintTex(w.lens),transparent:true,roughness:.04,metalness:0,clearcoat:1,clearcoatRoughness:.03,envMapIntensity:1.4,depthWrite:false,side:THREE.DoubleSide});
 
 const LZ=0; // lens front face
-const lensS5=new THREE.Shape(G5.LENS.map(([x,y])=>V(x,y)));
-let lensG5=ext(lensS5,1.6,.25,2,8);lensG5.translate(0,0,-1.6-.25);
-{ const p=lensG5.attributes.position;let y0=1e9,y1=-1e9;for(let i=0;i<p.count;i++){y0=Math.min(y0,p.getY(i));y1=Math.max(y1,p.getY(i))}
-  const uv=lensG5.attributes.uv;for(let i=0;i<p.count;i++){uv.setXY(i,.5,(p.getY(i)-y0)/(y1-y0))}uv.needsUpdate=true;
-  for(let i=0;i<p.count;i++){const dx=p.getX(i)-34,dy=p.getY(i);p.setZ(i,p.getZ(i)-(dx*dx+dy*dy)/(2*220))} // gentle base curve
-  lensG5.computeVertexNormals(); }
+const lensG5=(()=>{ // smooth rimless lens: concentric rings from the exact traced outline in to the centre, front and back, plus edge wall
+  const P0=G5.LENS,sag=(x,y)=>((x-34)**2+y*y)/440,T=1.6,R=28;let cx=0,cy=0,y0=1e9,y1=-1e9;
+  for(const [x,y] of P0){cx+=x/P0.length;cy+=y/P0.length;y0=Math.min(y0,y);y1=Math.max(y1,y)}
+  const n=P0.length,pos=[],uv=[],idx=[];const V2=(x,y,z)=>{pos.push(x,y,z);uv.push(.5,(y-y0)/(y1-y0));return pos.length/3-1};
+  for(const back of [0,1]){const base=pos.length/3;
+    for(let k=0;k<R;k++){const f=1-k/R;for(const [x,y] of P0){const X=cx+(x-cx)*f,Y=cy+(y-cy)*f;V2(X,Y,-sag(X,Y)-(back?T:0))}}
+    const c=V2(cx,cy,-sag(cx,cy)-(back?T:0));
+    for(let k=0;k<R-1;k++)for(let i=0;i<n;i++){const a=base+k*n+i,b=base+k*n+(i+1)%n,a2=a+n,b2=b+n;back?idx.push(a,a2,b,b,a2,b2):idx.push(a,b,a2,b,b2,a2)}
+    for(let i=0;i<n;i++){const a=base+(R-1)*n+i,b=base+(R-1)*n+(i+1)%n;back?idx.push(a,c,b):idx.push(a,b,c)}}
+  for(let i=0;i<n;i++){const a=i,b=(i+1)%n,a2=R*n+1+i,b2=R*n+1+(i+1)%n;idx.push(a,a2,b,b,a2,b2)} // edge wall
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();return g})();
 // bridge: flat stepped arch traced from the front, slot cutouts, engraving projected from the close-up
 const brS5=new THREE.Shape(G5.BR.map(([x,y])=>V(x,y)));
 for(const sl of G5.SLOTS){let h=sl.map(([x,y])=>V(x,y));if(THREE.ShapeUtils.isClockWise(h)===THREE.ShapeUtils.isClockWise(brS5.getPoints()))h.reverse();brS5.holes.push(new THREE.Path(h))}
@@ -56,6 +61,10 @@ let brG5=ext(brS5,1.0,.22,3,8);brG5.translate(0,0,.15);brG5=smooth(brG5);
 const brFace5=linUV(new THREE.ShapeGeometry(brS5,8),G5.BRUV);
 
 const MT=G5.MOUNTS;
+function neckPiece(g,bx,by,fx,fy){ // symmetric: round bulb at the bolt, waisted neck flaring into the fin
+  const dx=fx-bx,dy=fy-by,Ln=Math.hypot(dx,dy),r=1.45,sh=new THREE.Shape(),a0=Math.atan2(.82,1.15);
+  sh.moveTo(Ln,1.0);sh.quadraticCurveTo(Ln*.55,.55,1.15,.82);sh.absarc(0,0,r,a0,-a0,false);sh.quadraticCurveTo(Ln*.55,-.55,Ln,-1.0);sh.closePath();
+  let ng=ext(sh,.8,.32,4,32);ng.translate(0,0,.1);ng=smooth(ng);const m=mk(ng,'k:metal','end',g);m.position.set(bx,by,0);m.rotation.z=Math.atan2(dy,dx)}
 function lensFin(g,x,y,up,down){ // rounded blade that follows the lens edge: swept along the traced outline near (x,y)
   const L=G5.LENS,n=L.length;let i0=0,dm=1e9;L.forEach(([a,b],i)=>{const d=(a-x)**2+(b-y)**2;if(d<dm){dm=d;i0=i}});
   const walk=(dir,lim)=>{const o=[];let acc=0,i=i0;while(acc<lim){const j=(i+dir+n)%n;acc+=Math.hypot(L[j][0]-L[i][0],L[j][1]-L[i][1]);i=j;o.push(L[i])}return o};
@@ -85,12 +94,9 @@ function side5(sign){
   const [nx,ny]=G5.NBAR;
   { const [bx,by]=G5.NBOLT,yb=ny,sag=((bx-34)**2+by*by)/440,zb=-2.1-sag;
     // neck: tapers from the round bulb at the bolt to a flare where it meets the fin (close-up proportions)
-    const nk=new THREE.Shape(),mx=(nx+bx)/2;nk.moveTo(nx+.5,yb+1.05);nk.quadraticCurveTo(mx,yb+.62,bx-1.15,by+.9);
-    nk.absarc(bx,by,1.45,Math.PI*.7,-Math.PI*.7,true);nk.quadraticCurveTo(mx,yb-.62,nx+.5,yb-1.05);nk.closePath();
-    let ng=ext(nk,.8,.32,4,24);ng.translate(0,0,.1);mk(smooth(ng),'k:metal','end',g);
+    neckPiece(g,bx,by,nx+.5,yb);
     // polished hexagonal bolt head on the bulb, with its slot
     const hd=mk(new THREE.CylinderGeometry(1.15,1.2,.45,6),'k:metal','end',g);hd.rotation.set(Math.PI/2,0,0);hd.rotateY(Math.PI/6);hd.position.set(bx,by,1.42);
-    const sl=mk(new THREE.BoxGeometry(1.35,.3,.12),'k:dark','end',g);sl.position.set(bx,by,1.66);sl.rotation.z=-.05;
     // fin: a tall rounded blade standing on the lens edge, longer below the neck than above
     lensFin(g,nx+.35,yb,3.6,4.5);
     {const b=mk(new THREE.SphereGeometry(1,20,14),'k:metal','end',g);b.scale.set(1.1,1.25,.62);b.position.set(nx+.55,yb,.6)}
@@ -107,16 +113,13 @@ function side5(sign){
   { // arm body = traced engraved arm outline only; paddle, neck and fin rebuilt as rounded solids from the close-up
     // (arm is the swept strap built below)
     const FX=57.6,FY=ty+.9,TL=.34; // fin centre, tilt (top leans toward the lens)
-    const nk=new THREE.Shape(),mx=(tx+FX)/2;nk.moveTo(FX-.3,FY+1.0);nk.quadraticCurveTo(mx,ty+.75,tx+1.25,ty+1.0);
-    nk.absarc(tx,ty,1.6,Math.PI*.3,Math.PI*1.7,false);nk.quadraticCurveTo(mx,ty-.7,FX-.3,FY-1.1);nk.closePath();
-    let ng=ext(nk,.8,.32,4,24);ng.translate(0,0,.1);mk(smooth(ng),'k:metal','end',g);
+    neckPiece(g,tx,ty,FX-.3,FY);
     lensFin(g,FX,FY,3.9,3.7);
     for(const [x,y,sx,sy] of [[FX-.2,FY-.05,1.1,1.25],[FX+.7,FY+.3,1.0,1.3]]){const b=mk(new THREE.SphereGeometry(1,20,14),'k:metal','end',g);b.scale.set(sx,sy,.62);b.position.set(x,y,.6)} // fillets: neck->fin, fin->arm
     // engraved face of the arm, UVs set per traced point
     // bolt through the paddle and the lens: slotted head in front, hex nut, stub and hex end behind (as on the nasal side)
     const sag=((tx-34)**2+ty*ty)/440,zb=-2.1-sag;
     const hd=mk(new THREE.CylinderGeometry(1.0,1.05,.45,6),'k:metal','end',g);hd.rotation.set(Math.PI/2,0,0);hd.rotateY(Math.PI/6);hd.position.set(tx,ty,1.42);
-    const sl=mk(new THREE.BoxGeometry(1.15,.3,.12),'k:dark','end',g);sl.position.set(tx,ty,1.66);sl.rotation.z=.1;
     const sk=mk(new THREE.CylinderGeometry(.38,.38,1.3-zb,12),'k:metal','end',g);sk.rotation.x=Math.PI/2;sk.position.set(tx,ty,(1.3+zb)/2);
     const nt=mk(new THREE.CylinderGeometry(.95,.95,.85,6),'k:metal','end',g);nt.rotation.x=Math.PI/2;nt.position.set(tx,ty,zb-.43);
     const sb=mk(new THREE.CylinderGeometry(.42,.42,1.2,12),'k:metal','end',g);sb.rotation.x=Math.PI/2;sb.position.set(tx,ty,zb-1.45);
@@ -169,19 +172,21 @@ function side5(sign){
   const end=crv.getPointAt(1),dir=crv.getTangentAt(1),re=rad(1);
   // collar: a pronounced engraved band, ~30% wider than the rod, flaring out of the rod with a raised rim at each edge; the domed cap comes out of it
   const q=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir),CR=re*1.3,cc=end.clone().addScaledVector(dir,-.6);
-  const prof=[[re*.98,-1.9],[re+.04,-1.6],[CR-.05,-1.12],[CR+.13,-1.02],[CR+.13,-.86],[CR,-.78],[CR,.78],[CR+.13,.86],[CR+.13,1.02],[CR-.05,1.12],[CR-.2,1.16]].map(([r,h])=>new THREE.Vector2(r,h));
+  const prof=[[re*.98,-1.9],[re+.04,-1.6],[CR-.05,-1.12],[CR+.13,-1.02],[CR+.13,-.86],[CR,-.78],[CR,.78],[CR+.13,.86],[CR+.13,1.02],[CR-.05,1.12],[CR-.2,1.16]].reverse().map(([r,h])=>new THREE.Vector2(r,h));
   const lat=mk(new THREE.LatheGeometry(prof,40),'k:metal','temple',tg);lat.position.copy(cc);lat.quaternion.copy(q);
   const band=mk(new THREE.CylinderGeometry(CR+.015,CR+.015,1.5,40,1,true),'k:col','temple',tg);band.position.copy(cc);band.quaternion.copy(q);
-  const cap=mk(new THREE.SphereGeometry(CR-.2,24,16,0,Math.PI*2,0,Math.PI/2),'k:tip','temple',tg);cap.position.copy(cc).addScaledVector(dir,1.14);cap.quaternion.copy(q);cap.scale.y=.95;
+  const cap=mk(new THREE.SphereGeometry(CR-.15,24,16),'k:tip','temple',tg);cap.position.copy(cc).addScaledVector(dir,1.0);cap.quaternion.copy(q);cap.scale.y=.85;
+  {const plug=mk(new THREE.CylinderGeometry(CR-.1,CR-.1,2.4,24),'k:tip','temple',tg);plug.position.copy(cc);plug.quaternion.copy(q)}
   // nose pad (retraced from the rear close-up): round wire arm leaves the clamp behind the lens, hooks back and drops straight down
   // to a pad box with a screw on its back face; a long, narrow, curved titanium pad hangs from the box facing the nose
+  const npv=new THREE.Group();npv.position.set(nx-.2,ny-1.6,0);npv.rotation.z=.3;g.add(npv);const np=new THREE.Group();np.position.set(-(nx-.2),-(ny-1.6),0);npv.add(np); // follows the slant of the lens edge
   const pa=new THREE.CatmullRomCurve3([[nx-.2,ny-1.6,-1.7],[nx-.35,ny-1.1,-3.1],[nx-.5,ny-2.2,-4.0],[nx-.6,ny-4.4,-4.15],[nx-.6,ny-6.0,-4.1]].map(a=>new THREE.Vector3(...a)));
-  mk(new THREE.TubeGeometry(pa,32,.34,10),'k:metal','brow',g);
-  const pb=mk(new RoundedBoxGeometry(1.6,1.9,1.6,2,.35),'k:metal','brow',g);pb.position.set(nx-.6,ny-6.9,-4.1);
-  { const sc=mk(new THREE.CylinderGeometry(.42,.42,.18,16),'k:dark','brow',g);sc.rotation.x=Math.PI/2;sc.position.set(nx-.6,ny-6.9,-4.95);
-    const ring=mk(new THREE.TorusGeometry(.42,.08,6,18),'k:metal','brow',g);ring.position.set(nx-.6,ny-6.9,-5.0); }
-  const neck=mk(new RoundedBoxGeometry(1.0,.9,.8,2,.2),'k:metal','brow',g);neck.position.set(nx-1.5,ny-6.9,-4.1);
-  const pd=mk(padG5,'k:brushed','brow',g);pd.position.set(nx-2.05,ny-7.6,-4.2);pd.rotation.set(.12,Math.PI/2-.55,0);
+  mk(new THREE.TubeGeometry(pa,32,.34,10),'k:metal','brow',np);
+  const pb=mk(new RoundedBoxGeometry(1.6,1.9,1.6,2,.35),'k:metal','brow',np);pb.position.set(nx-.6,ny-6.9,-4.1);
+  { const sc=mk(new THREE.CylinderGeometry(.42,.42,.18,16),'k:dark','brow',np);sc.rotation.x=Math.PI/2;sc.position.set(nx-.6,ny-6.9,-4.95);
+    const ring=mk(new THREE.TorusGeometry(.42,.08,6,18),'k:metal','brow',np);ring.position.set(nx-.6,ny-6.9,-5.0); }
+  const neck=mk(new RoundedBoxGeometry(1.0,.9,.8,2,.2),'k:metal','brow',np);neck.position.set(nx-1.5,ny-6.9,-4.1);
+  const pd=mk(padG5,'k:brushed','brow',np);pd.position.set(nx-2.05,ny-7.6,-4.2);pd.rotation.set(.12,Math.PI/2-.55,0);
 }
 mk(brG5,'k:metal','brow',frame5);mk(brFace5,'k:br','brow',frame5).position.z=1.47;
 side5(1);side5(-1);
