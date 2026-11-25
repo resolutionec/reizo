@@ -38,7 +38,7 @@ for(const [k,f] of Object.entries(FIN5)){
   M5.eng[k]=new THREE.MeshStandardMaterial({color:f.c,map:ENG5.map,bumpMap:ENG5.bump,bumpScale:.7,metalness:.85,roughness:f.r,envMapIntensity:1.8,...PO(-2)});
   (M5.col||(M5.col={}))[k]=new THREE.MeshStandardMaterial({color:f.c,map:COL5.map,bumpMap:COL5.bump,bumpScale:.6,metalness:.85,roughness:f.r*.9,envMapIntensity:1.8,...PO(-2)});
   (M5.arm||(M5.arm={}))[k]=new THREE.MeshStandardMaterial({color:f.c,map:armMap5,bumpMap:armBump5,bumpScale:.5,metalness:.82,roughness:f.r,envMapIntensity:1.8,...PO(-2)});
-  M5.br[k]=new THREE.MeshStandardMaterial({color:f.c,map:brMap5,bumpMap:brBump5,bumpScale:.45,metalness:.82,roughness:f.r,envMapIntensity:1.8,...PO(-2)});
+  M5.br[k]=new THREE.MeshStandardMaterial({color:f.c,map:brMap5,bumpMap:brBump5,bumpScale:.25,metalness:.82,roughness:f.r,envMapIntensity:1.8,...PO(-2)});
 }
 for(const [k,w] of Object.entries(WAYS5))M5.lens[k]=new THREE.MeshPhysicalMaterial({color:0xffffff,map:tintTex(w.lens),transparent:true,roughness:.04,metalness:0,clearcoat:1,clearcoatRoughness:.03,envMapIntensity:1.4,depthWrite:false,side:THREE.DoubleSide});
 
@@ -71,13 +71,18 @@ let padG5;{const sh=new THREE.Shape();const N=40;for(let i=0;i<=N;i++){const t=i
 function side5(sign){
   const g=new THREE.Group();g.scale.x=sign;g.rotation.y=sign*.06;frame5.add(g);
   mk(lensG5,'k:lens','lens',g).renderOrder=3;
-  // nasal mount (retraced): tall flange on the lens edge, a tab welding it to the bridge leg, a tapered post and an elongated faceted knob
-  const NM=G5.NASAL,[nx,ny]=[NM.flange[0],NM.flange[1]];
-  const fl=mk(new RoundedBoxGeometry(NM.flange[2],NM.flange[3],1.1,3,.45),'k:metal','end',g);fl.position.set(NM.flange[0],NM.flange[1],.55);
-  const blk=mk(new RoundedBoxGeometry(1.9,3.6,2.4,2,.4),'k:metal','end',g);blk.position.set(NM.flange[0],NM.flange[1]-.3,-.9); // clamp behind the lens
-  const tab=mk(new RoundedBoxGeometry(NM.tab[2]+.6,NM.tab[3],.9,2,.3),'k:metal','end',g);tab.position.set(NM.tab[0],NM.tab[1],.65);
-  { const [px,py,pr]=NM.post,[kx,ky,kr,kl]=NM.knob,L=kx-px;const post=mk(new THREE.CylinderGeometry(pr*.62,pr,L,16),'k:metal','end',g);post.rotation.z=Math.PI/2;post.position.set(px+L/2,(py+ky)/2,.75);
-    hexPost(g,kx+.4,ky,2.6); }
+  // nasal mount retraced from the close-up as one cast piece: rounded paddle on the lens with a slotted bolt, a neck to the
+  // cross-bar standing on the lens edge, and a block joining it to the bridge leg
+  const [nx,ny]=G5.NBAR;
+  { let eg=ext(new THREE.Shape(G5.NASALW.map(([x,y])=>V(x,y))),.9,.22,3,8);eg.translate(0,0,.05);mk(smooth(eg),'k:metal','end',g);
+    const [bx,by]=G5.NBOLT,sag=((bx-34)**2+by*by)/440,zb=-2.1-sag;
+    const hd=mk(new THREE.CylinderGeometry(.62,.62,.35,20),'k:metal','end',g);hd.rotation.x=Math.PI/2;hd.position.set(bx,by,1.25);
+    const sl=mk(new THREE.BoxGeometry(1.0,.22,.12),'k:dark','end',g);sl.position.set(bx,by,1.42);sl.rotation.z=-.1;
+    const sk=mk(new THREE.CylinderGeometry(.38,.38,1.3-zb,12),'k:metal','end',g);sk.rotation.x=Math.PI/2;sk.position.set(bx,by,(1.3+zb)/2);
+    const nt=mk(new THREE.CylinderGeometry(.95,.95,.85,6),'k:metal','end',g);nt.rotation.x=Math.PI/2;nt.position.set(bx,by,zb-.43);
+    const sb=mk(new THREE.CylinderGeometry(.42,.42,1.2,12),'k:metal','end',g);sb.rotation.x=Math.PI/2;sb.position.set(bx,by,zb-1.45);
+    const en=mk(new THREE.CylinderGeometry(.6,.6,.65,6),'k:metal','end',g);en.rotation.x=Math.PI/2;en.position.set(bx,by,zb-2.35);
+    const cb=mk(new RoundedBoxGeometry(1.8,3.2,2.2,2,.4),'k:metal','end',g);cb.position.set(nx+.3,ny,-1.1); } // clamp behind the lens edge
   // end-piece retraced as one cast piece (close-up outline): rounded paddle on the lens with a slotted bolt, a neck to the slanted cross-bar
   // that grips the lens edge, then the engraved arm out to the corner; it turns back to the hinge from there
   const [tx,ty]=MT.temporal_post.knob,EX=G5.EP_END[0]-.55,EY=G5.EP_END[1];
