@@ -38,7 +38,7 @@ for(const [k,f] of Object.entries(FIN5)){
   M5.eng[k]=new THREE.MeshStandardMaterial({color:f.c,map:ENG5.map,bumpMap:ENG5.bump,bumpScale:.7,metalness:.85,roughness:f.r,envMapIntensity:1.8,...PO(-2)});
   (M5.col||(M5.col={}))[k]=new THREE.MeshStandardMaterial({color:f.c,map:COL5.map,bumpMap:COL5.bump,bumpScale:.6,metalness:.85,roughness:f.r*.9,envMapIntensity:1.8,...PO(-2)});
   (M5.arm||(M5.arm={}))[k]=new THREE.MeshStandardMaterial({color:f.c,map:armMap5,bumpMap:armBump5,bumpScale:.5,metalness:.82,roughness:f.r,envMapIntensity:1.8,...PO(-2)});
-  M5.br[k]=new THREE.MeshStandardMaterial({color:f.c,map:brMap5,bumpMap:brBump5,bumpScale:.9,metalness:.82,roughness:f.r,envMapIntensity:1.8,...PO(-2)});
+  M5.br[k]=new THREE.MeshStandardMaterial({color:f.c,map:brMap5,bumpMap:brBump5,bumpScale:.45,metalness:.82,roughness:f.r,envMapIntensity:1.8,...PO(-2)});
 }
 for(const [k,w] of Object.entries(WAYS5))M5.lens[k]=new THREE.MeshPhysicalMaterial({color:0xffffff,map:tintTex(w.lens),transparent:true,roughness:.04,metalness:0,clearcoat:1,clearcoatRoughness:.03,envMapIntensity:1.4,depthWrite:false,side:THREE.DoubleSide});
 
@@ -51,7 +51,7 @@ let lensG5=ext(lensS5,1.6,.25,2,8);lensG5.translate(0,0,-1.6-.25);
   lensG5.computeVertexNormals(); }
 // bridge: flat stepped arch traced from the front, slot cutouts, engraving projected from the close-up
 const brS5=new THREE.Shape(G5.BR.map(([x,y])=>V(x,y)));
-for(const sx of [1,-1]){let h=G5.SLOT.map(([x,y])=>V(sx*x,y));if(THREE.ShapeUtils.isClockWise(h)===THREE.ShapeUtils.isClockWise(brS5.getPoints()))h.reverse();brS5.holes.push(new THREE.Path(h))}
+for(const sl of G5.SLOTS){let h=sl.map(([x,y])=>V(x,y));if(THREE.ShapeUtils.isClockWise(h)===THREE.ShapeUtils.isClockWise(brS5.getPoints()))h.reverse();brS5.holes.push(new THREE.Path(h))}
 let brG5=ext(brS5,1.0,.22,3,8);brG5.translate(0,0,.15);brG5=smooth(brG5);
 const brFace5=linUV(new THREE.ShapeGeometry(brS5,8),G5.BRUV);
 
