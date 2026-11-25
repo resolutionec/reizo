@@ -880,6 +880,8 @@ let brG5=ext(brS5,1.0,.22,3,8);brG5.translate(0,0,.15);brG5=smooth(brG5);
 const brFace5=linUV(new THREE.ShapeGeometry(brS5,8),G5.BRUV);
 
 const MT=G5.MOUNTS;
+let padG5;{const sh=new THREE.Shape();const N=40;for(let i=0;i<=N;i++){const t=i/N*Math.PI*2,y=6.6*Math.cos(t),w=(y>0?1.55:2.05)*Math.sin(t);i?sh.lineTo(w,y):sh.moveTo(w,y)}
+  padG5=ext(sh,.5,.22,3,8);padG5.translate(0,0,-.25);const q=padG5.attributes.position;for(let i=0;i<q.count;i++){const y=q.getY(i);q.setZ(i,q.getZ(i)-.022*y*y)}padG5=smooth(padG5);}
 function side5(sign){
   const g=new THREE.Group();g.scale.x=sign;g.rotation.y=sign*.06;frame5.add(g);
   mk(lensG5,'k:lens','lens',g).renderOrder=3;
@@ -918,11 +920,15 @@ function side5(sign){
   const end=crv.getPoint(1),dir=crv.getTangent(1);
   const ringM=mk(new THREE.TorusGeometry(1.32,.28,10,24),'k:eng','temple',tg);ringM.position.copy(end).addScaledVector(dir,-.4);ringM.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),dir);
   const cap=mk(new THREE.SphereGeometry(1.4,20,14,0,Math.PI*2,0,Math.PI/2),'k:tip','temple',tg);cap.position.copy(end);cap.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir);cap.scale.y=1.3;
-  // nose pad: metal pad arm down from the nasal block, box and screw, clear teardrop pad facing the nose
-  const pa=new THREE.CatmullRomCurve3([[nx,ny-3.4,-1.4],[nx-.4,ny-6,-3.0],[nx-.9,ny-8.6,-4.4]].map(a=>new THREE.Vector3(...a)));
-  mk(new THREE.TubeGeometry(pa,20,.32,8),'k:metal','brow',g);
-  const pb=mk(new RoundedBoxGeometry(1.5,1.8,1.3,2,.3),'k:metal','brow',g);pb.position.set(nx-.9,ny-9.0,-4.6);
-  const pd=mk(padG,'k:brushed','brow',g);pd.position.set(nx-1.7,ny-10.2,-5.6);pd.rotation.y=.93;pd.scale.set(1,1.05,1);
+  // nose pad (retraced from the rear close-up): round wire arm leaves the clamp behind the lens, hooks back and drops straight down
+  // to a pad box with a screw on its back face; a long, narrow, curved titanium pad hangs from the box facing the nose
+  const pa=new THREE.CatmullRomCurve3([[nx-.2,ny-1.6,-1.7],[nx-.35,ny-1.1,-3.1],[nx-.5,ny-2.2,-4.0],[nx-.6,ny-4.4,-4.15],[nx-.6,ny-6.0,-4.1]].map(a=>new THREE.Vector3(...a)));
+  mk(new THREE.TubeGeometry(pa,32,.34,10),'k:metal','brow',g);
+  const pb=mk(new RoundedBoxGeometry(1.6,1.9,1.6,2,.35),'k:metal','brow',g);pb.position.set(nx-.6,ny-6.9,-4.1);
+  { const sc=mk(new THREE.CylinderGeometry(.42,.42,.18,16),'k:dark','brow',g);sc.rotation.x=Math.PI/2;sc.position.set(nx-.6,ny-6.9,-4.95);
+    const ring=mk(new THREE.TorusGeometry(.42,.08,6,18),'k:metal','brow',g);ring.position.set(nx-.6,ny-6.9,-5.0); }
+  const neck=mk(new RoundedBoxGeometry(1.0,.9,.8,2,.2),'k:metal','brow',g);neck.position.set(nx-1.5,ny-6.9,-4.1);
+  const pd=mk(padG5,'k:brushed','brow',g);pd.position.set(nx-2.05,ny-7.6,-4.2);pd.rotation.set(.12,Math.PI/2-.55,0);
 }
 mk(brG5,'k:metal','brow',frame5);mk(brFace5,'k:br','brow',frame5).position.z=1.47;
 side5(1);side5(-1);
