@@ -105,7 +105,7 @@ function side5(sign){
   // that grips the lens edge, then the engraved arm out to the corner; it turns back to the hinge from there
   const [tx,ty]=MT.temporal_post.knob,EX=G5.EP_END[0]-.55,EY=G5.EP_END[1];
   { // arm body = traced engraved arm outline only; paddle, neck and fin rebuilt as rounded solids from the close-up
-    let ab=ext(new THREE.Shape(G5.EPF.map(([x,y])=>V(x,y))),.9,.22,3,8);ab.translate(0,0,.05);mk(smooth(ab),'k:metal','end',g);
+    // (arm is the swept strap built below)
     const FX=57.6,FY=ty+.9,TL=.34; // fin centre, tilt (top leans toward the lens)
     const nk=new THREE.Shape(),mx=(tx+FX)/2;nk.moveTo(FX-.3,FY+1.0);nk.quadraticCurveTo(mx,ty+.75,tx+1.25,ty+1.0);
     nk.absarc(tx,ty,1.6,Math.PI*.3,Math.PI*1.7,false);nk.quadraticCurveTo(mx,ty-.7,FX-.3,FY-1.1);nk.closePath();
@@ -113,11 +113,6 @@ function side5(sign){
     lensFin(g,FX,FY,3.9,3.7);
     for(const [x,y,sx,sy] of [[FX-.2,FY-.05,1.1,1.25],[FX+.7,FY+.3,1.0,1.3]]){const b=mk(new THREE.SphereGeometry(1,20,14),'k:metal','end',g);b.scale.set(sx,sy,.62);b.position.set(x,y,.6)} // fillets: neck->fin, fin->arm
     // engraved face of the arm, UVs set per traced point
-    const P=G5.EPF,pts=P.map(([x,y])=>V(x,y)),tri=THREE.ShapeUtils.triangulateShape(pts,[]),pos=[],uv=[];
-    for(const [x,y,u,v] of P){pos.push(x,y,0);uv.push(u,v)}
-    const fg=new THREE.BufferGeometry();fg.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));fg.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));fg.setIndex(tri.flat());fg.computeVertexNormals();
-    if(fg.attributes.normal.getZ(0)<0){fg.setIndex(tri.flatMap(t=>[t[0],t[2],t[1]]));fg.computeVertexNormals()}
-    mk(fg,'k:arm','end',g).position.z=1.2;
     // bolt through the paddle and the lens: slotted head in front, hex nut, stub and hex end behind (as on the nasal side)
     const sag=((tx-34)**2+ty*ty)/440,zb=-2.1-sag;
     const hd=mk(new THREE.CylinderGeometry(1.0,1.05,.45,6),'k:metal','end',g);hd.rotation.set(Math.PI/2,0,0);hd.rotateY(Math.PI/6);hd.position.set(tx,ty,1.42);
@@ -128,8 +123,23 @@ function side5(sign){
     const en=mk(new THREE.CylinderGeometry(.6,.6,.65,6),'k:metal','end',g);en.rotation.x=Math.PI/2;en.position.set(tx,ty,zb-2.35);
     // clamp block behind the lens edge under the cross-bar
     const cb=mk(new RoundedBoxGeometry(1.8,3.2,2.2,2,.4),'k:metal','end',g);cb.position.set(57.9,ty+.3,-1.1); }
-  const back=mk(new RoundedBoxGeometry(1.1,3.4,10,2,.3),'k:metal','end',g);back.position.set(EX+.35,EY,-4.1);
-  const bF=mk(linUV(new THREE.PlaneGeometry(9.2,3.0),[-1/9.2,.5,1/3.0,.5]),'k:arm','end',g);bF.position.set(EX+.92,EY,-4.1);bF.rotation.y=Math.PI/2;
+  { // end-piece arm (retraced): one strap that leaves the fin, sweeps round the corner and runs back to the hinge clevis,
+    // waisted in the middle, with the engraving along its outer face
+    const c=new THREE.CubicBezierCurve3(new THREE.Vector3(58.4,0,.55),new THREE.Vector3(63.6,0,.5),new THREE.Vector3(EX+.5,0,-.8),new THREE.Vector3(EX+.45,0,-9.2));
+    const N=60,T=.9,pos=[],uv=[],idx=[],fp=[],fuv=[],fidx=[];
+    const H=t=>3.1-.75*Math.sin(Math.PI*Math.min(1,t*1.15))+.35*t,Y=t=>EY-.25+.25*t;
+    for(let i=0;i<=N;i++){const t=i/N,p=c.getPoint(t),d=c.getTangent(t),n=new THREE.Vector3(d.z,0,-d.x); // outward normal in xz
+      if(n.x+n.z<0)n.negate();const h=H(t),y=Y(t),o=p.clone(),inn=p.clone().addScaledVector(n,-T);
+      const ring=[[o,h/2],[o,-h/2],[inn,-h/2],[inn,h/2]];for(const [q,dy] of ring)pos.push(q.x,y+dy,q.z);
+      const fo=p.clone().addScaledVector(n,.02);fp.push(fo.x,y+h/2-.15,fo.z,fo.x,y-h/2+.15,fo.z);fuv.push(t,1,t,0)}
+    for(let i=0;i<N;i++){for(let k=0;k<4;k++){const a=i*4+k,b=i*4+(k+1)%4,a2=a+4,b2=b+4;idx.push(a,b,a2,b,b2,a2)}
+      const q=i*2;fidx.push(q,q+1,q+2,q+1,q+3,q+2)}
+    const cap=(i0,flip)=>{const a=i0*4;flip?idx.push(a,a+2,a+1,a,a+3,a+2):idx.push(a,a+1,a+2,a,a+2,a+3)};cap(0,true);cap(N,false);
+    let sg=new THREE.BufferGeometry();sg.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));sg.setIndex(idx);sg=sg.toNonIndexed();sg.computeVertexNormals();
+    mk(sg,'k:metal','end',g);
+    const fg=new THREE.BufferGeometry();fg.setAttribute('position',new THREE.Float32BufferAttribute(fp,3));fg.setAttribute('uv',new THREE.Float32BufferAttribute(fuv,2));fg.setIndex(fidx);fg.computeVertexNormals();
+    mk(fg,'k:arm','end',g); }
+
   // hinge block and screw at the back of the end-piece
   const hb=mk(new RoundedBoxGeometry(1.6,2.8,2.2,2,.3),'k:metal','end',g);hb.position.set(EX+.1,EY,-9.9);
   const hs=mk(new THREE.CylinderGeometry(.45,.45,.25,14),'k:dark','end',g);hs.position.set(EX+.1,EY-1.5,-9.9);
