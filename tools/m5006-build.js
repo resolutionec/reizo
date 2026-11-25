@@ -115,7 +115,8 @@ function side5(sign){
   { const oval=new THREE.Shape();oval.absellipse(0,0,13.5,.85,0,Math.PI*2);const og=linUV(new THREE.ShapeGeometry(oval,32),[1/27,.5,1/2.4,.5]);og.rotateY(Math.PI/2);
     const ov=mk(og,'k:eng','temple',tg);ov.position.set(.52,-.2,-17.5); }
   const PRO=[[30,-.42],[46,-1.0],[62,-1.9],[78,-3.0],[92,-4.5],[98,-5.8],[104,-8.0],[110.5,-12.3],[119.3,-19.3],[128.2,-27.2],[133.6,-32.0]]; // (mm back from the hinge, mm down)
-  const crv=new THREE.CatmullRomCurve3(PRO.map(([u,v])=>new THREE.Vector3(-.1,v,-u)),false,'centripetal');
+  const WR=u=>u>96?-.0045*(u-96)**2:0; // top view: the last ~38 mm turn inward (~6 mm at the tip) to wrap behind the head above the mastoid
+  const crv=new THREE.CatmullRomCurve3(PRO.map(([u,v])=>new THREE.Vector3(-.1+WR(u),v,-u)),false,'centripetal');
   const N=140,RS=18,pos=[],idx=[],X=new THREE.Vector3(1,0,0);
   const rad=t=>.68+.55*Math.pow(t,1.6); // 1.4 mm thick near the plate, ~2.5 mm at the tip
   for(let i=0;i<=N;i++){const t=i/N,c=crv.getPointAt(t),T=crv.getTangentAt(t),B=new THREE.Vector3().crossVectors(T,X).normalize();
