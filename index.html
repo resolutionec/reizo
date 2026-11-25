@@ -934,7 +934,7 @@ function hexPost(g,x,y,len){ // a bolt through the lens: elongated hex knob lyin
   const stub=mk(new THREE.CylinderGeometry(.42,.42,1.2,12),'k:metal','end',g);stub.rotation.x=Math.PI/2;stub.position.set(bx,y,zb-1.45);
   const end=mk(new THREE.CylinderGeometry(.6,.6,.65,6),'k:metal','end',g);end.rotation.x=Math.PI/2;end.position.set(bx,y,zb-2.35);}
 let padG5;{const sh=new THREE.Shape();const N=40;for(let i=0;i<=N;i++){const t=i/N*Math.PI*2,y=6.6*Math.cos(t),w=(y>0?1.55:2.05)*Math.sin(t);i?sh.lineTo(w,y):sh.moveTo(w,y)}
-  padG5=ext(sh,.5,.22,3,8);padG5.translate(0,0,-.25);const q=padG5.attributes.position;for(let i=0;i<q.count;i++){const y=q.getY(i);q.setZ(i,q.getZ(i)-.022*y*y)}padG5=smooth(padG5);}
+  padG5=ext(sh,.5,.22,3,8);padG5.translate(0,0,-.25);const q=padG5.attributes.position;for(let i=0;i<q.count;i++){const y=q.getY(i);q.setZ(i,q.getZ(i)+.02*y*y)}padG5=smooth(padG5);}
 function side5(sign){
   const g=new THREE.Group();g.scale.x=sign;g.rotation.y=sign*.06;frame5.add(g);
   mk(lensG5,'k:lens','lens',g).renderOrder=3;
