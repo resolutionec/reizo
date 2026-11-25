@@ -78,17 +78,28 @@ function side5(sign){
   const tab=mk(new RoundedBoxGeometry(NM.tab[2]+.6,NM.tab[3],.9,2,.3),'k:metal','end',g);tab.position.set(NM.tab[0],NM.tab[1],.65);
   { const [px,py,pr]=NM.post,[kx,ky,kr,kl]=NM.knob,L=kx-px;const post=mk(new THREE.CylinderGeometry(pr*.62,pr,L,16),'k:metal','end',g);post.rotation.z=Math.PI/2;post.position.set(px+L/2,(py+ky)/2,.75);
     hexPost(g,kx+.4,ky,2.6); }
-  // temporal mount and end-piece: knob on the lens, cross-piece, engraved arm out to the hinge, then back along the temple line
-  const [tx,ty]=MT.temporal_post.knob,[ex,ey]=MT.temporal_post.to_endpiece,EX=MT.endpiece_arm.to[0]-4.4,EY=MT.endpiece_arm.to[1]-.6;
-  // temporal mount mirrors the nasal one: flange on the lens edge, tapered post in to an elongated knob
-  { const fx=ex+.3,fy=ey-1.4;const tf=mk(new RoundedBoxGeometry(1.7,7.2,1.1,3,.45),'k:metal','end',g);tf.position.set(fx,fy,.55);tf.rotation.z=-.12;
-    const L=fx-tx-.8;const tp=mk(new THREE.CylinderGeometry(.55,.85,L,16),'k:metal','end',g);tp.rotation.z=Math.PI/2;tp.position.set(tx+L/2,ty+.2,.75);
-    {const gg=new THREE.Group();gg.scale.x=-1;gg.position.x=2*(tx-.4);g.add(gg);hexPost(gg,tx-.4,ty+.2,2.6)} // points outward, toward the end-piece
-    const tb=mk(new RoundedBoxGeometry(1.9,3.6,2.4,2,.4),'k:metal','end',g);tb.position.set(fx,ty+.2,-.9); }
-  const armL=EX-ex;const arm=mk(new RoundedBoxGeometry(armL,2.6,1.1,2,.3),'k:metal','end',g);arm.position.set(ex+armL/2+.6,EY,-.2);
-  const armF=mk(linUV(new THREE.PlaneGeometry(armL-.6,2.4),[1/(armL-.6),.5,1/2.4,.5]),'k:arm','end',g);armF.position.set(ex+armL/2+.6,EY,.37);
-  const back=mk(new RoundedBoxGeometry(1.1,2.6,9,2,.3),'k:metal','end',g);back.position.set(EX+.35,EY,-4.6);
-  const bF=mk(linUV(new THREE.PlaneGeometry(8.2,2.4),[-1/8.2,.5,1/2.4,.5]),'k:arm','end',g);bF.position.set(EX+.92,EY,-4.6);bF.rotation.y=Math.PI/2;
+  // end-piece retraced as one cast piece (close-up outline): rounded paddle on the lens with a slotted bolt, a neck to the slanted cross-bar
+  // that grips the lens edge, then the engraved arm out to the corner; it turns back to the hinge from there
+  const [tx,ty]=MT.temporal_post.knob,EX=G5.EP_END[0]-.55,EY=G5.EP_END[1];
+  { const sh=new THREE.Shape(G5.EPW.map(([x,y])=>V(x,y)));let eg=ext(sh,.9,.22,3,8);eg.translate(0,0,.05);mk(smooth(eg),'k:metal','end',g);
+    // engraved face of the arm, UVs set per traced point
+    const P=G5.EPF,pts=P.map(([x,y])=>V(x,y)),tri=THREE.ShapeUtils.triangulateShape(pts,[]),pos=[],uv=[];
+    for(const [x,y,u,v] of P){pos.push(x,y,0);uv.push(u,v)}
+    const fg=new THREE.BufferGeometry();fg.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));fg.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));fg.setIndex(tri.flat());fg.computeVertexNormals();
+    if(fg.attributes.normal.getZ(0)<0){fg.setIndex(tri.flatMap(t=>[t[0],t[2],t[1]]));fg.computeVertexNormals()}
+    mk(fg,'k:arm','end',g).position.z=1.2;
+    // bolt through the paddle and the lens: slotted head in front, hex nut, stub and hex end behind (as on the nasal side)
+    const sag=((tx-34)**2+ty*ty)/440,zb=-2.1-sag;
+    const hd=mk(new THREE.CylinderGeometry(.62,.62,.35,20),'k:metal','end',g);hd.rotation.x=Math.PI/2;hd.position.set(tx,ty,1.25);
+    const sl=mk(new THREE.BoxGeometry(1.0,.22,.12),'k:dark','end',g);sl.position.set(tx,ty,1.42);sl.rotation.z=.15;
+    const sk=mk(new THREE.CylinderGeometry(.38,.38,1.3-zb,12),'k:metal','end',g);sk.rotation.x=Math.PI/2;sk.position.set(tx,ty,(1.3+zb)/2);
+    const nt=mk(new THREE.CylinderGeometry(.95,.95,.85,6),'k:metal','end',g);nt.rotation.x=Math.PI/2;nt.position.set(tx,ty,zb-.43);
+    const sb=mk(new THREE.CylinderGeometry(.42,.42,1.2,12),'k:metal','end',g);sb.rotation.x=Math.PI/2;sb.position.set(tx,ty,zb-1.45);
+    const en=mk(new THREE.CylinderGeometry(.6,.6,.65,6),'k:metal','end',g);en.rotation.x=Math.PI/2;en.position.set(tx,ty,zb-2.35);
+    // clamp block behind the lens edge under the cross-bar
+    const cb=mk(new RoundedBoxGeometry(1.8,3.2,2.2,2,.4),'k:metal','end',g);cb.position.set(57.9,ty+.3,-1.1); }
+  const back=mk(new RoundedBoxGeometry(1.1,3.4,10,2,.3),'k:metal','end',g);back.position.set(EX+.35,EY,-4.1);
+  const bF=mk(linUV(new THREE.PlaneGeometry(9.2,3.0),[-1/9.2,.5,1/3.0,.5]),'k:arm','end',g);bF.position.set(EX+.92,EY,-4.1);bF.rotation.y=Math.PI/2;
   // hinge block and screw at the back of the end-piece
   const hb=mk(new RoundedBoxGeometry(1.6,2.8,2.2,2,.3),'k:metal','end',g);hb.position.set(EX+.1,EY,-9.9);
   const hs=mk(new THREE.CylinderGeometry(.45,.45,.25,14),'k:dark','end',g);hs.position.set(EX+.1,EY-1.5,-9.9);
