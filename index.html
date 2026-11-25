@@ -319,6 +319,48 @@ form{display:flex;flex-direction:column;gap:6px}
 </section>
 
 <!-- OBJECT PAGE -->
+<section class="view" data-view="object-m5006">
+  <div class="crumb"><a href="#room-titanium">COLLECTION</a> / <a href="#room-titanium">II TITANIUM</a> / M5006</div>
+  <div class="study">
+    <button class="callout c1" data-part="brow" aria-pressed="false"><b>① BRIDGE</b>engraved titanium, open slots, nose pads</button>
+    <button class="callout r c2" data-part="end" aria-pressed="false"><b>② LENS MOUNT</b>edge clamp, hex bolt through the lens</button>
+    <div class="stage">
+      <div class="mount3d" data-mode="object"><img class="fallback" src="img/m5006-front.jpg" alt="Model M5006 rimless titanium sunglasses, front view"><span class="loading">Hanging the work…</span></div>
+      <div class="shadow"></div>
+      <p class="hint">Drag to rotate · scroll to zoom</p>
+    </div>
+    <button class="callout r b c3" data-part="temple" aria-pressed="false"><b>③ TEMPLE</b>engraved end-piece, fluted rod, collared tip</button>
+    <button class="callout b c4" data-part="lens" aria-pressed="false"><b>④ LENS</b>rimless sun lens</button>
+  </div>
+  <div data-cfg></div>
+  <section class="spec" aria-label="Model M5006 specifications">
+    <div class="small">Model M5006 · Color · <span data-name="way5">Palladium White / Café Violet Gradient</span></div>
+    <h1>Titanium rimless sunglasses</h1>
+    <div class="spec-cols">
+    <div><div class="caps spec-h">Measurements</div><dl class="spec-grid" id="spec-grid5"></dl>
+    <p class="small spec-note" id="spec-note5">Eye size B is measured from the photographs; confirm it against the maker's spec sheet.</p></div>
+    <div><div class="caps spec-h">Details</div><ul class="spec-list">
+      <li>Rimless titanium construction</li>
+      <li>Engraved titanium bridge with open slots</li>
+      <li>Edge clamps and hex bolts through the lens</li>
+      <li>Engraved end-pieces sweeping back to the hinge</li>
+      <li>Fluted titanium temples with a stepped front sleeve</li>
+      <li>Engraved collars and domed temple tips</li>
+      <li>Adjustable titanium nose pads</li>
+    </ul></div>
+    </div>
+    <p class="spec-statement">Rimless titanium sunglasses in <span data-name="way5">Palladium White / Café Violet Gradient</span>: sun lenses held by engraved, bolted mounts, an open-slotted engraved bridge, and slim fluted temples finished with engraved collars.</p>
+    <a class="btn solid" href="#visit" id="enquire5">Enquire about M5006</a>
+  </section>
+  <div class="caps" style="padding-top:20px">Sample photographs</div>
+  <div class="views">
+    <figure><img src="img/m5006-front.jpg" alt="M5006 front view" loading="lazy"><figcaption>Front</figcaption></figure>
+    <figure><img src="img/m5006-side.jpg" alt="M5006 temple and hinge, side view" loading="lazy"><figcaption>Temple</figcaption></figure>
+    <figure><img src="img/m5006-detail.jpg" alt="M5006 bridge and lens mount detail" loading="lazy"><figcaption>Detail</figcaption></figure>
+  </div>
+  <div class="pager"><a href="#object-m3171">← M3171</a><a href="#room-titanium">Room II · Titanium →</a></div>
+</section>
+
 <section class="view" data-view="object-m3171">
   <div class="crumb"><a href="#room-titanium">COLLECTION</a> / <a href="#room-titanium">II TITANIUM</a> / M3171</div>
   <div class="study">
@@ -358,7 +400,7 @@ form{display:flex;flex-direction:column;gap:6px}
     <figure><img src="img/m3171-side.jpg" alt="M3171 side view" loading="lazy"><figcaption>Side</figcaption></figure>
     <figure><img src="img/m3171-hinge.jpg" alt="M3171 end-piece and rim detail" loading="lazy"><figcaption>Detail</figcaption></figure>
   </div>
-  <div class="pager"><a href="#room-titanium">← Room II · Titanium</a><span class="small">Next work coming soon →</span></div>
+  <div class="pager"><a href="#room-titanium">← Room II · Titanium</a><a href="#object-m5006">M5006 →</a></div>
 </section>
 
 <!-- ATELIER -->
@@ -467,7 +509,7 @@ const ROOMS=[
 const alt=(m)=>['sun','optical','sun','optical','sun','optical','sun','optical','sun'].map(k=>({type:k,t:`${m} ${k==='sun'?'sunglasses':'optical'}`}));
 const WORKS={
   acetate:alt('Acetate'),
-  titanium:[{no:'M5006',t:'Titanium rimless sunglasses',type:'sun',img:'img/m5006-front.jpg',href:'#home'},{no:'M3171',t:'Titanium round optical frame',type:'optical',img:'img/m3171-front.jpg',href:'#object-m3171'},...alt('Titanium').slice(2)],metal:alt('Metal'),
+  titanium:[{no:'M5006',t:'Titanium rimless sunglasses',type:'sun',img:'img/m5006-front.jpg',href:'#object-m5006'},{no:'M3171',t:'Titanium round optical frame',type:'optical',img:'img/m3171-front.jpg',href:'#object-m3171'},...alt('Titanium').slice(2)],metal:alt('Metal'),
   accessory:['Hinge component','Spring hinge','Temple core','Temple tip','Nose pad','Screw kit','Brow bar plate','Case','Cleaning cloth'].map(t=>({type:'comp',t}))};
 const MODELS=[['m5006','M5006'],['m3171','M3171']];
 const OPTS={ // fixed SKU colourways. M3171: enamel colour / metal finish. M5006: frame finish / lens tint
@@ -478,12 +520,12 @@ let cfg={...SAMPLE};
 try{const s=JSON.parse(localStorage.getItem('rz-cfg2')||'null');if(s&&OPTS.way.some(o=>o[0]===s.way)&&OPTS.way5.some(o=>o[0]===s.way5)&&MODELS.some(m=>m[0]===s.model))cfg={...SAMPLE,...s}}catch(e){}
 const nameOf=(k)=>OPTS[k].find(o=>o[0]===cfg[k])[1];
 const LABEL={ // homepage wall label per model
-  m5006:()=>{const [f,l]=nameOf('way5').split(' / ');return `<span class="ln"><b>Brand:</b> Matsuda</span><span class="ln"><b>Model M5006:</b> Titanium rimless sunglasses</span><span class="ln"><b>Material:</b> Titanium</span><span class="ln"><b>Frame:</b> ${f}</span><span class="ln"><b>Lens:</b> ${l}</span><a href="#room-titanium">View in collection →</a>`},
+  m5006:()=>{const [f,l]=nameOf('way5').split(' / ');return `<span class="ln"><b>Brand:</b> Matsuda</span><span class="ln"><b>Model M5006:</b> Titanium rimless sunglasses</span><span class="ln"><b>Material:</b> Titanium</span><span class="ln"><b>Frame:</b> ${f}</span><span class="ln"><b>Lens:</b> ${l}</span><a href="#object-m5006">View work →</a>`},
   m3171:()=>`<span class="ln"><b>Brand:</b> Matsuda</span><span class="ln"><b>Model M3171:</b> Titanium round optical frame</span><span class="ln"><b>Material:</b> Titanium, enamel rim and temples</span><span class="ln"><b>Lens:</b> Clear demo lens, Rx-ready</span><span class="ln"><b>Color:</b> ${nameOf('way')}</span><a href="#object-m3171">View work →</a>`};
 window.PV={get cfg(){return cfg},view:'home',part:null};
 
 /* configurator */
-const cfgHTML=(home)=>{const k=home&&cfg.model==='m5006'?'way5':'way';return `<div class="cfg" role="group" aria-label="Configure the model">${home?`
+const cfgHTML=(home)=>{const k=home?(cfg.model==='m5006'?'way5':'way'):(String(window.PV?.view||'')==='object-m5006'?'way5':'way');return `<div class="cfg" role="group" aria-label="Configure the model">${home?`
   <div class="cfg-row"><span class="cfg-k">Model</span><div class="mdl">${MODELS.map(([v,n])=>`<button class="mbtn" data-model="${v}" aria-pressed="${cfg.model===v}">${n}</button>`).join('')}</div></div>`:''}${[k].map(k=>`
   <div class="cfg-row"><span class="cfg-k">Color</span>
   <div class="sw">${OPTS[k].map(([v,n,c])=>`<button class="swatch" data-k="${k}" data-v="${v}" title="${n}" aria-label="Color: ${n}" aria-pressed="${cfg[k]===v}"><i class="${v==='havana'?'havana':''}" style="${c?`background:${c}`:''}"></i></button>`).join('')}</div>
@@ -506,6 +548,8 @@ paintCfg();
 const SPECS=[['Eye size A',48,'mm'],['Eye size B',null,'mm'],['Bridge size',23,'mm'],['Temple length',145,'mm'],['Frame width','≈132','mm']];
 document.getElementById('spec-grid').innerHTML=SPECS.map(([k,v,u])=>`<div><dt>${k}</dt><dd class="${v==null?'tbc':''}">${v==null?'—':v+(u||'')}</dd></div>`).join('');
 document.getElementById('spec-note').hidden=SPECS.every(x=>x[1]!=null);
+const SPECS5=[['Eye size A',46,'mm'],['Eye size B','≈40','mm'],['Bridge size',22,'mm'],['Temple length',145,'mm']];
+document.getElementById('spec-grid5').innerHTML=SPECS5.map(([k,v,u])=>`<div><dt>${k}</dt><dd class="${v==null?'tbc':''}">${v==null?'—':v+(u||'')}</dd></div>`).join('');
 
 /* home room cards */
 document.getElementById('room-cards').innerHTML=ROOMS.map(r=>`<a class="room-card" href="#room-${r.id}"><div class="pic"><img src="img/m3171-front.jpg" alt=""></div><span>${r.n} · ${r.t.split(' ')[0]==='Eyewear'?'Accessory':r.t.split(' ')[0]}</span></a>`).join('');
@@ -544,6 +588,7 @@ document.querySelectorAll('.callout').forEach(c=>{
 
 /* enquiry */
 document.getElementById('enquire').addEventListener('click',()=>{PV.re=`Model M3171 · ${nameOf('way')}`});
+document.getElementById('enquire5').addEventListener('click',()=>{PV.re=`Model M5006 · ${nameOf('way5')}`});
 const form=document.getElementById('enq');let text='';
 form.addEventListener('submit',e=>{
   e.preventDefault();const d=Object.fromEntries(new FormData(form));const err=document.getElementById('f-err');
@@ -577,7 +622,7 @@ const route=()=>{
   document.querySelectorAll('[data-nav]').forEach(a=>a.dataset.nav===nav?a.setAttribute('aria-current','page'):a.removeAttribute('aria-current'));
   if(h==='visit'&&PV.re){document.getElementById('f-re').value=PV.re;PV.re=null}
   setMore(false);moreBtn.classList.toggle('cur',['journal','faq','visit'].includes(nav));
-  PV.view=h;PV.locked=null;PV.part=null;
+  PV.view=h;PV.locked=null;PV.part=null;paintCfg();
   document.querySelectorAll('.callout').forEach(x=>x.setAttribute('aria-pressed','false'));
   scrollTo(0,0);
   dispatchEvent(new CustomEvent('pv:route'));
@@ -1045,7 +1090,7 @@ const hiCache=new Map();
 const hi=(m)=>{if(!hiCache.has(m)){const c=m.clone();c.emissive=new THREE.Color(0xb08a52);c.emissiveIntensity=.45;hiCache.set(m,c)}return hiCache.get(m)};
 function applyMaterials(){
   const c=window.PV?.cfg||{},w=c.way||'teal',w5=c.way5||'pw-violet',fin=WAYS5[w5].fin,p=window.PV?.part;
-  const show5=(c.model||'m5006')==='m5006'&&!String(window.PV?.view||'').startsWith('object');
+  const vw=String(window.PV?.view||''),show5=vw==='object-m5006'||(!vw.startsWith('object')&&(c.model||'m5006')==='m5006');
   frame.visible=!show5;frame5.visible=show5;
   for(const m of parts){const r=m.userData.role;let base;
     if(r.startsWith('k:')){const k=r.slice(2);base=k==='lens'?M5.lens[w5]:(k==='dark'||k==='tip'||k==='pad')?M5[k]:M5[k][fin]}
