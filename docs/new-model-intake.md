@@ -44,6 +44,12 @@ Use a **physical sample** if possible. The measurements come from these photos, 
 | 6 | **Close-ups of every metal or decorative part, straight on** | Hinge (count the barrels), end-pieces, bridge or brow bar, temple plates, temple tips, nose pads, rivets or crystals, logos. Shoot each one square to the camera. |
 | 7 | Bottom view (optional) | For complex bridges or keyholes. |
 
+**Also send from the start (learned on M5006 — each missing angle cost a review round):**
+- Straight side profile with the temples open (for the temple curve and the drop at the tip).
+- Top-down view with the temples open (for the inward wrap behind the head).
+- Close-ups of: bridge (front), each lens mount / end-piece (front and from the temple side), hinge from below, nose pad from behind, temple decoration, temple tip.
+- Underside or 3/4 view showing how the metal meets the lens edge (rimless).
+
 ## 4. Colourways (required for the configurator)
 - **Frame colours:** a photo of each colourway, or the acetate supplier and colour code. For crystal or transparent colours, note how see-through it is.
 - **Metal finishes:** e.g. gold, palladium, gunmetal, matte or polished.
