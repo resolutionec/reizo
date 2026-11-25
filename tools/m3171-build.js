@@ -95,6 +95,9 @@ const sh2=(a)=>a.map(([x,y])=>V(x,y));
 function shapeWithHole(o,h){const s=new THREE.Shape(o);if(h){h=h.slice();if(THREE.ShapeUtils.isClockWise(h)===THREE.ShapeUtils.isClockWise(o))h.reverse();s.holes.push(new THREE.Path(h))}return s}
 const tBase=smooth(ext(shapeWithHole(sh2(GEO.TEMPLE.outer),sh2(GEO.TEMPLE.hole)),TT,.1,3,8)); // rounded polished edges; colour section stands 0.1 mm proud of it, incl. the cutout
 const tTeal=smooth(ext(new THREE.Shape(sh2(GEO.TEMPLE.teal)),TT,.2,3,8)); // colour wraps the edges; flame and diamond stay metal
+// standard temple wrap (top view): the last ~40 mm turn inward ~6 mm to rest behind the head above the mastoid
+const WRAP3=u=>u>78?-6*((u-78)/58)**2:0;
+for(const gm of [tBase,tTeal]){const q=gm.attributes.position;for(let i=0;i<q.count;i++)q.setZ(i,q.getZ(i)+WRAP3(q.getX(i)));q.needsUpdate=true;gm.computeVertexNormals();gm.computeBoundingSphere()}
 // end-piece front plate traced from the front photograph: slanted inner end over the rim, beaded face
 const epShape=new THREE.Shape(sh2(GEO.EP));
 // the end-piece is one bent strip, 1.4 mm thick like the temple: front plate here, the side piece continues it round the corner

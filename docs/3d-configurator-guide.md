@@ -174,7 +174,7 @@ Collected from the review rounds on three models. Read this before starting a ne
 - **Bridges sit in the lens plane**, welded to the nasal mounts — not 2 mm in front.
 - **End-pieces sweep back** round the corner to the hinge as one curved strap (or one solid piece), never a sideways bar plus a box.
 - **No step at hinge joints.** End-piece and temple share height, thickness and edge radius where they meet; outer faces flush.
-- **Temples:** run nearly level, bend down behind the ear, and the tip ends level with the bottom of the lens (side view). From above, the last ~35 mm turn inward ~6 mm to wrap behind the head above the mastoid. Never splay outward.
+- **Temples (DEFAULT for every model, no prompt needed):** run nearly level, bend down behind the ear, and the tip ends level with the bottom of the lens (side view). From above, the last ~35 mm turn inward ~6 mm to wrap behind the head above the mastoid. Never splay outward.
 - **Temple decorations have relief:** stepped bands (raised middle, ledges top and bottom), pronounced collars wider than the rod, engraving with real bump.
 - **Nose pads** hang on a hooked wire arm from a box with a screw, are long and narrow, convex toward the nose, and follow the slant of the lens's nasal edge.
 - **Bolt heads are plain polished hex** unless a slot is clearly visible.
