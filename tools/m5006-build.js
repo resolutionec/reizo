@@ -46,12 +46,16 @@ let brG5=ext(brS5,1.0,.22,3,8);brG5.translate(0,0,.15);brG5=smooth(brG5);
 const brFace5=linUV(new THREE.ShapeGeometry(brS5,8),G5.BRUV);
 
 const MT=G5.MOUNTS;
-function hexPost(g,x,y,len){ // front: elongated hexagonal knob pointing in; back: hex nut on the lens, stub and hex end (rear close-up)
-  const k=mk(new THREE.CylinderGeometry(1.05,.8,len,6),'k:metal','end',g);k.rotation.z=Math.PI/2;k.rotation.x=Math.PI/6;k.position.set(x,y,.8);
-  const tip=mk(new THREE.SphereGeometry(1.05,6,10),'k:metal','end',g);tip.rotation.set(Math.PI/6,0,Math.PI/2,'XZY');tip.scale.set(1,.55,1);tip.position.set(x+len/2,y,.8); // domed hex end
-  const nut=mk(new THREE.CylinderGeometry(1.0,1.0,.9,6),'k:metal','end',g);nut.rotation.x=Math.PI/2;nut.position.set(x,y,-3.25);
-  const stub=mk(new THREE.CylinderGeometry(.45,.45,1.4,12),'k:metal','end',g);stub.rotation.x=Math.PI/2;stub.position.set(x,y,-4.35);
-  const end=mk(new THREE.CylinderGeometry(.62,.62,.7,6),'k:metal','end',g);end.rotation.x=Math.PI/2;end.position.set(x,y,-5.3);}
+function hexPost(g,x,y,len){ // a bolt through the lens: elongated hex knob lying on the lens front with an axial hex head at its tip,
+  // the shank passing through the lens, then a hex nut on the back face, a short threaded stub and a small hex end (close-ups)
+  const sag=(x,y)=>((x-34)**2+y*y)/440,bx=x+len/2-.35,zf=-sag(x,y),zb=-2.1-sag(bx,y);
+  const k=mk(new THREE.CylinderGeometry(1.0,.78,len,6),'k:metal','end',g);k.rotation.z=Math.PI/2;k.rotation.x=Math.PI/6;k.position.set(x,y,zf+.85);
+  const tip=mk(new THREE.SphereGeometry(1.0,6,10),'k:metal','end',g);tip.rotation.set(Math.PI/6,0,Math.PI/2,'XZY');tip.scale.set(1,.55,1);tip.position.set(x+len/2,y,zf+.85);
+  const head=mk(new THREE.CylinderGeometry(.62,.62,.55,6),'k:metal','end',g);head.rotation.x=Math.PI/2;head.position.set(bx,y,zf+1.85);
+  const shank=mk(new THREE.CylinderGeometry(.38,.38,zf+1.6-zb,12),'k:metal','end',g);shank.rotation.x=Math.PI/2;shank.position.set(bx,y,(zf+1.6+zb)/2);
+  const nut=mk(new THREE.CylinderGeometry(.95,.95,.85,6),'k:metal','end',g);nut.rotation.x=Math.PI/2;nut.position.set(bx,y,zb-.43);
+  const stub=mk(new THREE.CylinderGeometry(.42,.42,1.2,12),'k:metal','end',g);stub.rotation.x=Math.PI/2;stub.position.set(bx,y,zb-1.45);
+  const end=mk(new THREE.CylinderGeometry(.6,.6,.65,6),'k:metal','end',g);end.rotation.x=Math.PI/2;end.position.set(bx,y,zb-2.35);}
 let padG5;{const sh=new THREE.Shape();const N=40;for(let i=0;i<=N;i++){const t=i/N*Math.PI*2,y=6.6*Math.cos(t),w=(y>0?1.55:2.05)*Math.sin(t);i?sh.lineTo(w,y):sh.moveTo(w,y)}
   padG5=ext(sh,.5,.22,3,8);padG5.translate(0,0,-.25);const q=padG5.attributes.position;for(let i=0;i<q.count;i++){const y=q.getY(i);q.setZ(i,q.getZ(i)-.022*y*y)}padG5=smooth(padG5);}
 function side5(sign){
@@ -78,20 +82,26 @@ function side5(sign){
   // hinge block and screw at the back of the end-piece
   const hb=mk(new RoundedBoxGeometry(1.6,2.8,2.2,2,.3),'k:metal','end',g);hb.position.set(EX+.1,EY,-9.9);
   const hs=mk(new THREE.CylinderGeometry(.45,.45,.25,14),'k:dark','end',g);hs.position.set(EX+.1,EY-1.5,-9.9);
-  // temple: flat engraved strip to ~48 mm, then a tapered round rod that bends down over the ear to a capped tip
+  // temple (traced from the side photograph): flat grooved plate for the first 32 mm, then a slim fluted rod that runs almost level
+  // to ~92 mm, bends down behind the ear and drops in a straight line so the tip ends level with the bottom of the lens
   const tg=new THREE.Group();tg.position.set(EX+.1,EY,-10.6);g.add(tg);
-  const strip=mk(new RoundedBoxGeometry(1.0,2.6,46,2,.35),'k:brushed','temple',tg);strip.position.set(0,-.1,-23);
-  { const oval=new THREE.Shape();oval.absellipse(0,0,17,1.05,0,Math.PI*2);const og=linUV(new THREE.ShapeGeometry(oval,32),[1/34,.5,1/2.6,.5]);og.rotateY(Math.PI/2);
-    const ov=mk(og,'k:eng','temple',tg);ov.position.set(.52,-.1,-24); }
-  const pts=[];for(let i=0;i<=60;i++){const t=i/60*97;let z,y;
-    if(t<58){z=-46-t;y=-.1-t*.06}else{const a=(t-58)/39*0.62;z=-46-58-Math.sin(a)*39/0.62*.95;y=-.1-58*.06-(1-Math.cos(a))*39/0.62*.95}pts.push(new THREE.Vector3(-.1,y,z))}
-  const crv=new THREE.CatmullRomCurve3(pts);const rod=new THREE.TubeGeometry(crv,96,1,12,false);
-  { const p=rod.attributes.position,n=97,ring=13;for(let i=0;i<p.count;i++){const seg=Math.floor(i/ring),t=seg/(n-1),c=crv.getPoint(Math.min(1,t)),r=.95+.35*t*t;
-      p.setXYZ(i,c.x+(p.getX(i)-c.x)*r*(t<.05?1.1:1)*.9,c.y+(p.getY(i)-c.y)*r*1.25,c.z+(p.getZ(i)-c.z)*r)}p.needsUpdate=true;rod.computeVertexNormals() }
+  const strip=mk(new RoundedBoxGeometry(1.0,2.4,32,2,.35),'k:brushed','temple',tg);strip.position.set(0,-.2,-16);
+  { const oval=new THREE.Shape();oval.absellipse(0,0,13.5,.85,0,Math.PI*2);const og=linUV(new THREE.ShapeGeometry(oval,32),[1/27,.5,1/2.4,.5]);og.rotateY(Math.PI/2);
+    const ov=mk(og,'k:eng','temple',tg);ov.position.set(.52,-.2,-17.5); }
+  const PRO=[[30,-.42],[46,-1.0],[62,-1.9],[78,-3.0],[92,-4.5],[98,-5.8],[104,-8.0],[110.5,-12.3],[119.3,-19.3],[128.2,-27.2],[133.6,-32.0]]; // (mm back from the hinge, mm down)
+  const crv=new THREE.CatmullRomCurve3(PRO.map(([u,v])=>new THREE.Vector3(-.1,v,-u)),false,'centripetal');
+  const N=140,RS=18,pos=[],idx=[],X=new THREE.Vector3(1,0,0);
+  const rad=t=>.68+.55*Math.pow(t,1.6); // 1.4 mm thick near the plate, ~2.5 mm at the tip
+  for(let i=0;i<=N;i++){const t=i/N,c=crv.getPointAt(t),T=crv.getTangentAt(t),B=new THREE.Vector3().crossVectors(T,X).normalize();
+    for(let j=0;j<=RS;j++){const th=j/RS*Math.PI*2,r=rad(t)*(1+.06*Math.cos(6*th));pos.push(c.x+X.x*Math.cos(th)*r+B.x*Math.sin(th)*r,c.y+B.y*Math.sin(th)*r,c.z+B.z*Math.sin(th)*r)}}
+  for(let i=0;i<N;i++)for(let j=0;j<RS;j++){const a=i*(RS+1)+j,b=a+RS+1;idx.push(a,b,a+1,b,b+1,a+1)}
+  const rod=new THREE.BufferGeometry();rod.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));rod.setIndex(idx);rod.computeVertexNormals();
   mk(rod,'k:brushed','temple',tg);
-  const end=crv.getPoint(1),dir=crv.getTangent(1);
-  const ringM=mk(new THREE.TorusGeometry(1.32,.28,10,24),'k:eng','temple',tg);ringM.position.copy(end).addScaledVector(dir,-.4);ringM.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),dir);
-  const cap=mk(new THREE.SphereGeometry(1.4,20,14,0,Math.PI*2,0,Math.PI/2),'k:tip','temple',tg);cap.position.copy(end);cap.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir);cap.scale.y=1.3;
+  // tip: engraved collar and a domed end cap
+  const end=crv.getPointAt(1),dir=crv.getTangentAt(1),re=rad(1);
+  const col=mk(new THREE.CylinderGeometry(re+.18,re+.12,1.3,24),'k:eng','temple',tg);col.position.copy(end).addScaledVector(dir,-.35);col.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir);
+  { const g2=new THREE.CylinderGeometry(re*.98,re+.18,.25,24);const bead=mk(g2,'k:metal','temple',tg);bead.position.copy(end).addScaledVector(dir,-1.05);bead.quaternion.copy(col.quaternion); }
+  const cap=mk(new THREE.SphereGeometry(re+.05,22,14,0,Math.PI*2,0,Math.PI/2),'k:tip','temple',tg);cap.position.copy(end).addScaledVector(dir,.3);cap.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir);cap.scale.y=1.15;
   // nose pad (retraced from the rear close-up): round wire arm leaves the clamp behind the lens, hooks back and drops straight down
   // to a pad box with a screw on its back face; a long, narrow, curved titanium pad hangs from the box facing the nose
   const pa=new THREE.CatmullRomCurve3([[nx-.2,ny-1.6,-1.7],[nx-.35,ny-1.1,-3.1],[nx-.5,ny-2.2,-4.0],[nx-.6,ny-4.4,-4.15],[nx-.6,ny-6.0,-4.1]].map(a=>new THREE.Vector3(...a)));
