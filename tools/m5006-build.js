@@ -49,18 +49,20 @@ const MT=G5.MOUNTS;
 function side5(sign){
   const g=new THREE.Group();g.scale.x=sign;g.rotation.y=sign*.06;frame5.add(g);
   mk(lensG5,'k:lens','lens',g).renderOrder=3;
-  // nasal mount: clamp block behind the lens edge, post through the lens, faceted knob in front
-  const [nx,ny]=MT.nasal_post.from,[kx,ky]=MT.nasal_post.knob;
-  const blk=mk(new RoundedBoxGeometry(2.2,4.6,2.6,2,.4),'k:metal','end',g);blk.position.set(nx+1.4,ny,-.9);
-  const fl=mk(new RoundedBoxGeometry(1.1,6.4,.9,2,.35),'k:metal','end',g);fl.position.set(nx+2.4,ny+.4,.6); // vertical flange on the lens edge
-  const post=mk(new THREE.CylinderGeometry(.55,.85,kx-nx-1.2,16),'k:metal','end',g);post.rotation.z=Math.PI/2;post.position.set((nx+kx)/2+.4,ky,.75);
-  const kn=mk(new THREE.IcosahedronGeometry(MT.nasal_post.knob_r,1),'k:metal','end',g);kn.scale.set(1.25,1,.9);kn.position.set(kx+.3,ky,.8);
+  // nasal mount (retraced): tall flange on the lens edge, a tab welding it to the bridge leg, a tapered post and an elongated faceted knob
+  const NM=G5.NASAL,[nx,ny]=[NM.flange[0],NM.flange[1]];
+  const fl=mk(new RoundedBoxGeometry(NM.flange[2],NM.flange[3],1.1,3,.45),'k:metal','end',g);fl.position.set(NM.flange[0],NM.flange[1],.55);
+  const blk=mk(new RoundedBoxGeometry(1.9,3.6,2.4,2,.4),'k:metal','end',g);blk.position.set(NM.flange[0],NM.flange[1]-.3,-.9); // clamp behind the lens
+  const tab=mk(new RoundedBoxGeometry(NM.tab[2]+.6,NM.tab[3],.9,2,.3),'k:metal','end',g);tab.position.set(NM.tab[0],NM.tab[1],.65);
+  { const [px,py,pr]=NM.post,[kx,ky,kr,kl]=NM.knob,L=kx-px;const post=mk(new THREE.CylinderGeometry(pr*.62,pr,L,16),'k:metal','end',g);post.rotation.z=Math.PI/2;post.position.set(px+L/2,(py+ky)/2,.75);
+    const kn=mk(new THREE.IcosahedronGeometry(kr,1),'k:metal','end',g);kn.scale.set(kl/kr,1,.85);kn.position.set(kx+.2,ky,.75); }
   // temporal mount and end-piece: knob on the lens, cross-piece, engraved arm out to the hinge, then back along the temple line
   const [tx,ty]=MT.temporal_post.knob,[ex,ey]=MT.temporal_post.to_endpiece,EX=MT.endpiece_arm.to[0]-4.4,EY=MT.endpiece_arm.to[1]-.6;
-  const tk=mk(new THREE.IcosahedronGeometry(MT.temporal_post.knob_r,1),'k:metal','end',g);tk.scale.set(1.25,1,.9);tk.position.set(tx,ty,.8);
-  { const A=new THREE.Vector3(tx+.6,ty+.3,.75),B=new THREE.Vector3(ex+.6,ey,.4),d=B.clone().sub(A);
-    const st=mk(new THREE.CylinderGeometry(.6,.85,d.length(),14),'k:metal','end',g);st.position.copy(A).addScaledVector(d,.5);st.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize()); }
-  const cross=mk(new RoundedBoxGeometry(1.2,6.2,1.4,2,.45),'k:metal','end',g);cross.position.set(ex+.6,ey-.2,.1);cross.rotation.z=-.35;
+  // temporal mount mirrors the nasal one: flange on the lens edge, tapered post in to an elongated knob
+  { const fx=ex+.3,fy=ey-1.4;const tf=mk(new RoundedBoxGeometry(1.7,7.2,1.1,3,.45),'k:metal','end',g);tf.position.set(fx,fy,.55);tf.rotation.z=-.12;
+    const L=fx-tx-.8;const tp=mk(new THREE.CylinderGeometry(.55,.85,L,16),'k:metal','end',g);tp.rotation.z=Math.PI/2;tp.position.set(tx+L/2,ty+.2,.75);
+    const tk=mk(new THREE.IcosahedronGeometry(1.5,1),'k:metal','end',g);tk.scale.set(1.23,1,.85);tk.position.set(tx-.4,ty+.2,.75);
+    const tb=mk(new RoundedBoxGeometry(1.9,3.6,2.4,2,.4),'k:metal','end',g);tb.position.set(fx,ty+.2,-.9); }
   const armL=EX-ex;const arm=mk(new RoundedBoxGeometry(armL,2.6,1.1,2,.3),'k:metal','end',g);arm.position.set(ex+armL/2+.6,EY,-.2);
   const armF=mk(linUV(new THREE.PlaneGeometry(armL-.6,2.2),[1/(armL),0,.5,.5]),'k:eng','end',g);armF.position.set(ex+armL/2+.6,EY,.37);
   const back=mk(new RoundedBoxGeometry(1.1,2.6,9,2,.3),'k:metal','end',g);back.position.set(EX+.35,EY,-4.6);
@@ -83,10 +85,10 @@ function side5(sign){
   const ringM=mk(new THREE.TorusGeometry(1.32,.28,10,24),'k:eng','temple',tg);ringM.position.copy(end).addScaledVector(dir,-.4);ringM.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),dir);
   const cap=mk(new THREE.SphereGeometry(1.4,20,14,0,Math.PI*2,0,Math.PI/2),'k:tip','temple',tg);cap.position.copy(end);cap.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir);cap.scale.y=1.3;
   // nose pad: metal pad arm down from the nasal block, box and screw, clear teardrop pad facing the nose
-  const pa=new THREE.CatmullRomCurve3([[nx+.8,ny-2.2,-1.6],[nx+.2,ny-5,-3.2],[nx-.4,ny-8,-4.4]].map(a=>new THREE.Vector3(...a)));
+  const pa=new THREE.CatmullRomCurve3([[nx,ny-3.4,-1.4],[nx-.4,ny-6,-3.0],[nx-.9,ny-8.6,-4.4]].map(a=>new THREE.Vector3(...a)));
   mk(new THREE.TubeGeometry(pa,20,.32,8),'k:metal','brow',g);
-  const pb=mk(new RoundedBoxGeometry(1.5,1.8,1.3,2,.3),'k:metal','brow',g);pb.position.set(nx-.4,ny-8.4,-4.6);
-  const pd=mk(padG,'k:pad','brow',g);pd.position.set(nx-1.2,ny-9.6,-5.6);pd.rotation.y=.93;pd.scale.set(1,1.05,1);
+  const pb=mk(new RoundedBoxGeometry(1.5,1.8,1.3,2,.3),'k:metal','brow',g);pb.position.set(nx-.9,ny-9.0,-4.6);
+  const pd=mk(padG,'k:brushed','brow',g);pd.position.set(nx-1.7,ny-10.2,-5.6);pd.rotation.y=.93;pd.scale.set(1,1.05,1);
 }
 mk(brG5,'k:metal','brow',frame5);mk(brFace5,'k:br','brow',frame5).position.z=1.47;
 side5(1);side5(-1);
