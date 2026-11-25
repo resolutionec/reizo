@@ -57,23 +57,38 @@ const lensG5=(()=>{ // smooth rimless lens: concentric rings from the exact trac
 // bridge: flat stepped arch traced from the front, slot cutouts, engraving projected from the close-up
 const brS5=new THREE.Shape(G5.BR.map(([x,y])=>V(x,y)));
 for(const sl of G5.SLOTS){let h=sl.map(([x,y])=>V(x,y));if(THREE.ShapeUtils.isClockWise(h)===THREE.ShapeUtils.isClockWise(brS5.getPoints()))h.reverse();brS5.holes.push(new THREE.Path(h))}
-let brG5=ext(brS5,1.0,.22,3,8);brG5.translate(0,0,.15);brG5=smooth(brG5);
+let brG5=ext(brS5,1.0,.22,3,8);brG5.translate(0,0,-1.55);brG5=smooth(brG5);
 const brFace5=linUV(new THREE.ShapeGeometry(brS5,8),G5.BRUV);
 
 const MT=G5.MOUNTS;
+const SAG5=(x,y)=>((x-34)**2+y*y)/440,LT=1.6; // lens front-surface sag and lens thickness
 function neckPiece(g,bx,by,fx,fy){ // symmetric: round bulb at the bolt, waisted neck flaring into the fin
   const dx=fx-bx,dy=fy-by,Ln=Math.hypot(dx,dy),r=1.45,sh=new THREE.Shape(),a0=Math.atan2(.82,1.15);
   sh.moveTo(Ln,1.0);sh.quadraticCurveTo(Ln*.55,.55,1.15,.82);sh.absarc(0,0,r,a0,-a0,false);sh.quadraticCurveTo(Ln*.55,-.55,Ln,-1.0);sh.closePath();
-  let ng=ext(sh,.8,.32,4,32);ng.translate(0,0,.1);ng=smooth(ng);const m=mk(ng,'k:metal','end',g);m.position.set(bx,by,0);m.rotation.z=Math.atan2(dy,dx)}
-function lensFin(g,x,y,up,down){ // rounded blade that follows the lens edge: swept along the traced outline near (x,y)
+  let ng=ext(sh,.8,.32,4,32);ng.translate(0,0,.32);ng.rotateZ(Math.atan2(dy,dx));ng.translate(bx,by,0);
+  {const q=ng.attributes.position;for(let i=0;i<q.count;i++)q.setZ(i,q.getZ(i)-SAG5(q.getX(i),q.getY(i)))}
+  ng=smooth(ng);mk(ng,'k:metal','end',g)}
+function lensFin(g,x,y,up,down,W=1.25){ // edge clamp: a rounded strip that wraps the lens edge for the full lens depth, swept along the traced outline
   const L=G5.LENS,n=L.length;let i0=0,dm=1e9;L.forEach(([a,b],i)=>{const d=(a-x)**2+(b-y)**2;if(d<dm){dm=d;i0=i}});
-  const walk=(dir,lim)=>{const o=[];let acc=0,i=i0;while(acc<lim){const j=(i+dir+n)%n;acc+=Math.hypot(L[j][0]-L[i][0],L[j][1]-L[i][1]);i=j;o.push(L[i])}return o};
-  const a=walk(1,Math.max(up,down)+1),b=walk(-1,Math.max(up,down)+1),A=(a[a.length-1][1]>b[b.length-1][1])?a:b,B=A===a?b:a;
-  const clip=(arr,lim)=>{const o=[];let acc=0,prev=L[i0];for(const q of arr){acc+=Math.hypot(q[0]-prev[0],q[1]-prev[1]);prev=q;if(acc>lim)break;o.push(q)}return o};
-  const pts=[...clip(A,up).reverse(),L[i0],...clip(B,down)].map(([px,py])=>{const dx=px-34,dy=py,r=Math.hypot(dx,dy),o=.15;
-    return new THREE.Vector3(px+dx/r*o,py+dy/r*o,.55)});
-  const c=new THREE.CatmullRomCurve3(pts,false,'centripetal');mk(new THREE.TubeGeometry(c,48,.7,14,false),'k:metal','end',g);
-  for(const t of [0,1]){const e=mk(new THREE.SphereGeometry(.7,14,10),'k:metal','end',g);e.position.copy(c.getPoint(t))}}
+  const res=[];for(let k=-140;k<=140;k++){const i=(i0+k+n)%n;res.push([k,L[i]])}
+  let acc={},s0=0;acc[0]=0;for(let k=1;k<=140;k++){s0+=Math.hypot(L[(i0+k)%n][0]-L[(i0+k-1)%n][0],L[(i0+k)%n][1]-L[(i0+k-1)%n][1]);acc[k]=s0}
+  s0=0;for(let k=-1;k>=-140;k--){s0-=Math.hypot(L[(i0+k+n)%n][0]-L[(i0+k+1+n)%n][0],L[(i0+k+n)%n][1]-L[(i0+k+1+n)%n][1]);acc[k]=s0}
+  const upDir=L[(i0+3)%n][1]>L[i0][1]?1:-1;const lo=-down,hi=up;
+  const pts=res.filter(([k])=>{const a=acc[k]*upDir;return a>=lo&&a<=hi}).map(([k,p])=>[acc[k]*upDir,p]).sort((u,v)=>u[0]-v[0]);
+  const cv=new THREE.CatmullRomCurve3(pts.map(([,[px,py]])=>new THREE.Vector3(px,py,0)),false,'centripetal');
+  const N=48,RS=20,pos=[],idx=[];let cx=0,cy=0;for(const [px,py] of L){cx+=px/n;cy+=py/n}
+  for(let i=0;i<=N;i++){const t=i/N,p=cv.getPoint(t),d=cv.getTangent(t);let nx=d.y,ny=-d.x;if(nx*(p.x-cx)+ny*(p.y-cy)<0){nx=-nx;ny=-ny}
+    const e=Math.sin(Math.PI*Math.min(1,Math.min(t,1-t)*7)/2)**.5,w=W*(.35+.65*e),zf=-SAG5(p.x,p.y)+.38,zb=-SAG5(p.x,p.y)-LT-.12,zc=(zf+zb)/2,D=(zf-zb)*(.55+.45*e);
+    for(let j=0;j<RS;j++){const th=j/RS*Math.PI*2,c=Math.cos(th),sn=Math.sin(th),sc=Math.sign(c)*Math.abs(c)**.45,ss=Math.sign(sn)*Math.abs(sn)**.45;
+      const r=-.05+w/2+w/2*sc;pos.push(p.x+nx*r,p.y+ny*r,zc+D/2*ss)}}
+  for(let i=0;i<N;i++)for(let j=0;j<RS;j++){const a=i*RS+j,b=i*RS+(j+1)%RS;idx.push(a,b,a+RS,b,b+RS,a+RS)}
+  for(const [i,f] of [[0,1],[N,0]]){const c0=pos.length/3;let mx=0,my=0,mz=0;for(let j=0;j<RS;j++){mx+=pos[(i*RS+j)*3]/RS;my+=pos[(i*RS+j)*3+1]/RS;mz+=pos[(i*RS+j)*3+2]/RS}
+    pos.push(mx,my,mz);for(let j=0;j<RS;j++){const a=i*RS+j,b=i*RS+(j+1)%RS;f?idx.push(a,c0,b):idx.push(a,b,c0)}}
+  const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));geo.setIndex(idx);geo.computeVertexNormals();
+  // check outward-facing normals (sample a side vertex); flip winding if needed
+  const nrm=geo.attributes.normal,p0=cv.getPoint(.5),j0=Math.floor(N/2)*RS;const vx=pos[j0*3]-p0.x,vy=pos[j0*3+1]-p0.y;
+  if(nrm.getX(j0)*vx+nrm.getY(j0)*vy<0){const ix=geo.index.array;for(let k=0;k<ix.length;k+=3){const t=ix[k+1];ix[k+1]=ix[k+2];ix[k+2]=t}geo.computeVertexNormals()}
+  mk(geo,'k:metal','end',g);return cv}
 function hexPost(g,x,y,len){ // a bolt through the lens: elongated hex knob lying on the lens front with an axial hex head at its tip,
   // the shank passing through the lens, then a hex nut on the back face, a short threaded stub and a small hex end (close-ups)
   const sag=(x,y)=>((x-34)**2+y*y)/440,bx=x+len/2-.35,zf=-sag(x,y),zb=-2.1-sag(bx,y);
@@ -94,41 +109,38 @@ function side5(sign){
   const [nx,ny]=G5.NBAR;
   { const [bx,by]=G5.NBOLT,yb=ny,sag=((bx-34)**2+by*by)/440,zb=-2.1-sag;
     // neck: tapers from the round bulb at the bolt to a flare where it meets the fin (close-up proportions)
-    neckPiece(g,bx,by,nx+.5,yb);
+    neckPiece(g,bx,by,nx+.2,yb);
     // polished hexagonal bolt head on the bulb, with its slot
-    const hd=mk(new THREE.CylinderGeometry(1.15,1.2,.45,6),'k:metal','end',g);hd.rotation.set(Math.PI/2,0,0);hd.rotateY(Math.PI/6);hd.position.set(bx,by,1.42);
+    const hd=mk(new THREE.CylinderGeometry(1.15,1.2,.45,6),'k:metal','end',g);hd.rotation.set(Math.PI/2,0,0);hd.rotateY(Math.PI/6);hd.position.set(bx,by,-SAG5(bx,by)+1.62);
     // fin: a tall rounded blade standing on the lens edge, longer below the neck than above
-    lensFin(g,nx+.35,yb,3.6,4.5);
-    {const b=mk(new THREE.SphereGeometry(1,20,14),'k:metal','end',g);b.scale.set(1.1,1.25,.62);b.position.set(nx+.55,yb,.6)}
+    lensFin(g,nx+.35,yb,3.6,4.5,2.9); // wide enough to weld onto the bridge leg
     // square block joining the fin to the bridge leg
-    const jb=mk(new RoundedBoxGeometry(1.8,1.9,1.5,2,.3),'k:metal','end',g);jb.position.set(nx-1.0,yb,.45);
     const sk=mk(new THREE.CylinderGeometry(.38,.38,1.3-zb,12),'k:metal','end',g);sk.rotation.x=Math.PI/2;sk.position.set(bx,by,(1.3+zb)/2);
     const nt=mk(new THREE.CylinderGeometry(.95,.95,.85,6),'k:metal','end',g);nt.rotation.x=Math.PI/2;nt.position.set(bx,by,zb-.43);
     const sb=mk(new THREE.CylinderGeometry(.42,.42,1.2,12),'k:metal','end',g);sb.rotation.x=Math.PI/2;sb.position.set(bx,by,zb-1.45);
     const en=mk(new THREE.CylinderGeometry(.6,.6,.65,6),'k:metal','end',g);en.rotation.x=Math.PI/2;en.position.set(bx,by,zb-2.35);
-    const cb=mk(new RoundedBoxGeometry(1.8,3.2,2.2,2,.4),'k:metal','end',g);cb.position.set(nx+.3,ny,-1.1); } // clamp behind the lens edge
+ } // clamp behind the lens edge
   // end-piece retraced as one cast piece (close-up outline): rounded paddle on the lens with a slotted bolt, a neck to the slanted cross-bar
   // that grips the lens edge, then the engraved arm out to the corner; it turns back to the hinge from there
   const [tx,ty]=MT.temporal_post.knob,EX=G5.EP_END[0]-.55,EY=G5.EP_END[1];
   { // arm body = traced engraved arm outline only; paddle, neck and fin rebuilt as rounded solids from the close-up
     // (arm is the swept strap built below)
     const FX=57.6,FY=ty+.9,TL=.34; // fin centre, tilt (top leans toward the lens)
-    neckPiece(g,tx,ty,FX-.3,FY);
+    neckPiece(g,tx,ty,FX+.2,FY);
     lensFin(g,FX,FY,3.9,3.7);
-    for(const [x,y,sx,sy] of [[FX-.2,FY-.05,1.1,1.25],[FX+.7,FY+.3,1.0,1.3]]){const b=mk(new THREE.SphereGeometry(1,20,14),'k:metal','end',g);b.scale.set(sx,sy,.62);b.position.set(x,y,.6)} // fillets: neck->fin, fin->arm
     // engraved face of the arm, UVs set per traced point
     // bolt through the paddle and the lens: slotted head in front, hex nut, stub and hex end behind (as on the nasal side)
     const sag=((tx-34)**2+ty*ty)/440,zb=-2.1-sag;
-    const hd=mk(new THREE.CylinderGeometry(1.0,1.05,.45,6),'k:metal','end',g);hd.rotation.set(Math.PI/2,0,0);hd.rotateY(Math.PI/6);hd.position.set(tx,ty,1.42);
+    const hd=mk(new THREE.CylinderGeometry(1.0,1.05,.45,6),'k:metal','end',g);hd.rotation.set(Math.PI/2,0,0);hd.rotateY(Math.PI/6);hd.position.set(tx,ty,-SAG5(tx,ty)+1.62);
     const sk=mk(new THREE.CylinderGeometry(.38,.38,1.3-zb,12),'k:metal','end',g);sk.rotation.x=Math.PI/2;sk.position.set(tx,ty,(1.3+zb)/2);
     const nt=mk(new THREE.CylinderGeometry(.95,.95,.85,6),'k:metal','end',g);nt.rotation.x=Math.PI/2;nt.position.set(tx,ty,zb-.43);
     const sb=mk(new THREE.CylinderGeometry(.42,.42,1.2,12),'k:metal','end',g);sb.rotation.x=Math.PI/2;sb.position.set(tx,ty,zb-1.45);
     const en=mk(new THREE.CylinderGeometry(.6,.6,.65,6),'k:metal','end',g);en.rotation.x=Math.PI/2;en.position.set(tx,ty,zb-2.35);
     // clamp block behind the lens edge under the cross-bar
-    const cb=mk(new RoundedBoxGeometry(1.8,3.2,2.2,2,.4),'k:metal','end',g);cb.position.set(57.9,ty+.3,-1.1); }
+    }
   { // end-piece arm (retraced): one strap that leaves the fin, sweeps round the corner and runs back to the hinge clevis,
     // waisted in the middle, with the engraving along its outer face
-    const c=new THREE.CubicBezierCurve3(new THREE.Vector3(58.4,0,.55),new THREE.Vector3(63.6,0,.5),new THREE.Vector3(EX+.5,0,-.8),new THREE.Vector3(EX+.45,0,-9.2));
+    const c=new THREE.CubicBezierCurve3(new THREE.Vector3(57.4,0,-SAG5(57.6,ty+.9)-.4),new THREE.Vector3(63.0,0,-SAG5(57.6,ty+.9)-.6),new THREE.Vector3(EX+.5,0,-2.4),new THREE.Vector3(EX+.45,0,-9.2));
     const N=60,T=.9,pos=[],uv=[],idx=[],fp=[],fuv=[],fidx=[];
     const H=t=>3.1-.75*Math.sin(Math.PI*Math.min(1,t*1.15))+.35*t,Y=t=>EY-.25+.25*t;
     for(let i=0;i<=N;i++){const t=i/N,p=c.getPoint(t),d=c.getTangent(t),n=new THREE.Vector3(d.z,0,-d.x); // outward normal in xz
@@ -188,7 +200,7 @@ function side5(sign){
   const neck=mk(new RoundedBoxGeometry(1.0,.9,.8,2,.2),'k:metal','brow',np);neck.position.set(nx-1.5,ny-6.9,-4.1);
   const pd=mk(padG5,'k:brushed','brow',np);pd.position.set(nx-2.05,ny-7.6,-4.2);pd.rotation.set(.12,Math.PI/2-.55,0);
 }
-mk(brG5,'k:metal','brow',frame5);mk(brFace5,'k:br','brow',frame5).position.z=1.47;
+mk(brG5,'k:metal','brow',frame5);mk(brFace5,'k:br','brow',frame5).position.z=-.24;
 side5(1);side5(-1);
 root.add(frame5);
 { const b=new THREE.Box3().setFromObject(frame5),c=b.getCenter(new THREE.Vector3());frame5.position.sub(c);frame5.position.y+=4; }
