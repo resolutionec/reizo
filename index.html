@@ -908,10 +908,19 @@ function side5(sign){
   // nasal mount retraced from the close-up as one cast piece: rounded paddle on the lens with a slotted bolt, a neck to the
   // cross-bar standing on the lens edge, and a block joining it to the bridge leg
   const [nx,ny]=G5.NBAR;
-  { let eg=ext(new THREE.Shape(G5.NASALW.map(([x,y])=>V(x,y))),.9,.22,3,8);eg.translate(0,0,.05);mk(smooth(eg),'k:metal','end',g);
-    const [bx,by]=G5.NBOLT,sag=((bx-34)**2+by*by)/440,zb=-2.1-sag;
-    const hd=mk(new THREE.CylinderGeometry(.62,.62,.35,20),'k:metal','end',g);hd.rotation.x=Math.PI/2;hd.position.set(bx,by,1.25);
-    const sl=mk(new THREE.BoxGeometry(1.0,.22,.12),'k:dark','end',g);sl.position.set(bx,by,1.42);sl.rotation.z=-.1;
+  { const [bx,by]=G5.NBOLT,yb=ny,sag=((bx-34)**2+by*by)/440,zb=-2.1-sag;
+    // neck: tapers from the round bulb at the bolt to a flare where it meets the fin (close-up proportions)
+    const nk=new THREE.Shape(),mx=(nx+bx)/2;nk.moveTo(nx+.5,yb+1.05);nk.quadraticCurveTo(mx,yb+.62,bx-1.15,by+.9);
+    nk.absarc(bx,by,1.45,Math.PI*.7,-Math.PI*.7,true);nk.quadraticCurveTo(mx,yb-.62,nx+.5,yb-1.05);nk.closePath();
+    let ng=ext(nk,.8,.32,4,24);ng.translate(0,0,.1);mk(smooth(ng),'k:metal','end',g);
+    // polished hexagonal bolt head on the bulb, with its slot
+    const hd=mk(new THREE.CylinderGeometry(1.15,1.2,.45,6),'k:metal','end',g);hd.rotation.set(Math.PI/2,0,0);hd.rotateY(Math.PI/6);hd.position.set(bx,by,1.42);
+    const sl=mk(new THREE.BoxGeometry(1.35,.3,.12),'k:dark','end',g);sl.position.set(bx,by,1.66);sl.rotation.z=-.05;
+    // fin: a tall rounded blade standing on the lens edge, longer below the neck than above
+    const fs=new THREE.Shape(),fw=.65,ft=yb+3.6-fw,fb=yb-4.5+fw,fx=nx+.35;fs.moveTo(fx-fw,fb);fs.lineTo(fx-fw,ft);fs.absarc(fx,ft,fw,Math.PI,0,true);fs.lineTo(fx+fw,fb);fs.absarc(fx,fb,fw,0,Math.PI,true);
+    let fg=ext(fs,1.3,.35,4,16);fg.translate(0,0,-.35);mk(smooth(fg),'k:metal','end',g);
+    // square block joining the fin to the bridge leg
+    const jb=mk(new RoundedBoxGeometry(1.8,1.9,1.5,2,.3),'k:metal','end',g);jb.position.set(nx-1.0,yb,.45);
     const sk=mk(new THREE.CylinderGeometry(.38,.38,1.3-zb,12),'k:metal','end',g);sk.rotation.x=Math.PI/2;sk.position.set(bx,by,(1.3+zb)/2);
     const nt=mk(new THREE.CylinderGeometry(.95,.95,.85,6),'k:metal','end',g);nt.rotation.x=Math.PI/2;nt.position.set(bx,by,zb-.43);
     const sb=mk(new THREE.CylinderGeometry(.42,.42,1.2,12),'k:metal','end',g);sb.rotation.x=Math.PI/2;sb.position.set(bx,by,zb-1.45);
@@ -920,7 +929,14 @@ function side5(sign){
   // end-piece retraced as one cast piece (close-up outline): rounded paddle on the lens with a slotted bolt, a neck to the slanted cross-bar
   // that grips the lens edge, then the engraved arm out to the corner; it turns back to the hinge from there
   const [tx,ty]=MT.temporal_post.knob,EX=G5.EP_END[0]-.55,EY=G5.EP_END[1];
-  { const sh=new THREE.Shape(G5.EPW.map(([x,y])=>V(x,y)));let eg=ext(sh,.9,.22,3,8);eg.translate(0,0,.05);mk(smooth(eg),'k:metal','end',g);
+  { // arm body = traced engraved arm outline only; paddle, neck and fin rebuilt as rounded solids from the close-up
+    let ab=ext(new THREE.Shape(G5.EPF.map(([x,y])=>V(x,y))),.9,.22,3,8);ab.translate(0,0,.05);mk(smooth(ab),'k:metal','end',g);
+    const FX=57.6,FY=ty+.9,TL=.34; // fin centre, tilt (top leans toward the lens)
+    const nk=new THREE.Shape(),mx=(tx+FX)/2;nk.moveTo(FX-.3,FY+1.0);nk.quadraticCurveTo(mx,ty+.75,tx+1.25,ty+1.0);
+    nk.absarc(tx,ty,1.6,Math.PI*.3,Math.PI*1.7,false);nk.quadraticCurveTo(mx,ty-.7,FX-.3,FY-1.1);nk.closePath();
+    let ng=ext(nk,.8,.32,4,24);ng.translate(0,0,.1);mk(smooth(ng),'k:metal','end',g);
+    const fs=new THREE.Shape(),fw=.72,ft=3.9-fw,fb=-3.7+fw;fs.moveTo(-fw,fb);fs.lineTo(-fw,ft);fs.absarc(0,ft,fw,Math.PI,0,true);fs.lineTo(fw,fb);fs.absarc(0,fb,fw,0,Math.PI,true);
+    let fg2=ext(fs,1.3,.35,4,16);fg2.translate(0,0,-.35);const fin=mk(smooth(fg2),'k:metal','end',g);fin.position.set(FX,FY,0);fin.rotation.z=TL;
     // engraved face of the arm, UVs set per traced point
     const P=G5.EPF,pts=P.map(([x,y])=>V(x,y)),tri=THREE.ShapeUtils.triangulateShape(pts,[]),pos=[],uv=[];
     for(const [x,y,u,v] of P){pos.push(x,y,0);uv.push(u,v)}
@@ -929,8 +945,8 @@ function side5(sign){
     mk(fg,'k:arm','end',g).position.z=1.2;
     // bolt through the paddle and the lens: slotted head in front, hex nut, stub and hex end behind (as on the nasal side)
     const sag=((tx-34)**2+ty*ty)/440,zb=-2.1-sag;
-    const hd=mk(new THREE.CylinderGeometry(.62,.62,.35,20),'k:metal','end',g);hd.rotation.x=Math.PI/2;hd.position.set(tx,ty,1.25);
-    const sl=mk(new THREE.BoxGeometry(1.0,.22,.12),'k:dark','end',g);sl.position.set(tx,ty,1.42);sl.rotation.z=.15;
+    const hd=mk(new THREE.CylinderGeometry(1.0,1.05,.45,6),'k:metal','end',g);hd.rotation.set(Math.PI/2,0,0);hd.rotateY(Math.PI/6);hd.position.set(tx,ty,1.42);
+    const sl=mk(new THREE.BoxGeometry(1.15,.3,.12),'k:dark','end',g);sl.position.set(tx,ty,1.66);sl.rotation.z=.1;
     const sk=mk(new THREE.CylinderGeometry(.38,.38,1.3-zb,12),'k:metal','end',g);sk.rotation.x=Math.PI/2;sk.position.set(tx,ty,(1.3+zb)/2);
     const nt=mk(new THREE.CylinderGeometry(.95,.95,.85,6),'k:metal','end',g);nt.rotation.x=Math.PI/2;nt.position.set(tx,ty,zb-.43);
     const sb=mk(new THREE.CylinderGeometry(.42,.42,1.2,12),'k:metal','end',g);sb.rotation.x=Math.PI/2;sb.position.set(tx,ty,zb-1.45);
@@ -945,9 +961,15 @@ function side5(sign){
   // temple (traced from the side photograph): flat grooved plate for the first 32 mm, then a slim fluted rod that runs almost level
   // to ~92 mm, bends down behind the ear and drops in a straight line so the tip ends level with the bottom of the lens
   const tg=new THREE.Group();tg.position.set(EX+.1,EY,-10.6);g.add(tg);
-  const strip=mk(new RoundedBoxGeometry(1.0,2.4,32,2,.35),'k:brushed','temple',tg);strip.position.set(0,-.2,-16);
-  { const oval=new THREE.Shape();oval.absellipse(0,0,13.5,.85,0,Math.PI*2);const og=linUV(new THREE.ShapeGeometry(oval,32),[1/27,.5,1/2.4,.5]);og.rotateY(Math.PI/2);
-    const ov=mk(og,'k:eng','temple',tg);ov.position.set(.52,-.2,-17.5); }
+  // front section (retraced from the close-up): a polished lozenge sleeve with long pointed ends and a groove running down
+  // each side, threaded on the slim rod that continues from the hinge into the temple
+  { const U0=2.5,U1=34,N=64,RS=40,pos=[],idx=[];
+    for(let i=0;i<=N;i++){const u=U0+(U1-U0)*i/N,e=Math.min(1,(u-U0)/3,(U1-u)/6),sm=e*e*(3-2*e),h=.7+.6*sm,t=.62+.18*sm,yc=-.2-.007*u;
+      for(let j=0;j<=RS;j++){const th=j/RS*Math.PI*2,c=Math.cos(th),sn=Math.sin(th),gr=1-.28*sm*Math.exp(-((sn/.22)**2)); // groove at mid-height on both faces
+        pos.push(-.1+t*c*gr,yc+h*sn,-u)}}
+    for(let i=0;i<N;i++)for(let j=0;j<RS;j++){const a=i*(RS+1)+j,b=a+RS+1;idx.push(a,b,a+1,b,b+1,a+1)}
+    const sg=new THREE.BufferGeometry();sg.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));sg.setIndex(idx);sg.computeVertexNormals();mk(sg,'k:metal','temple',tg);
+    const rd=mk(new THREE.CylinderGeometry(.62,.62,4,14),'k:metal','temple',tg);rd.rotation.x=Math.PI/2;rd.position.set(-.1,-.21,-2); }
   const PRO=[[30,-.42],[46,-1.0],[62,-1.9],[78,-3.0],[92,-4.5],[98,-5.8],[104,-8.0],[110.5,-12.3],[119.3,-19.3],[128.2,-27.2],[133.6,-32.0]]; // (mm back from the hinge, mm down)
   const WR=u=>u>96?-.0045*(u-96)**2:0; // top view: the last ~38 mm turn inward (~6 mm at the tip) to wrap behind the head above the mastoid
   const crv=new THREE.CatmullRomCurve3(PRO.map(([u,v])=>new THREE.Vector3(-.1+WR(u),v,-u)),false,'centripetal');
